@@ -1,5 +1,11 @@
+from visualiser.tvisual import TVisual
+
+
 def main():
-    print("Hello from 42-fly-in!")
+    print("Welcome to fly-in!")
+
+    app = TVisual()
+    app.run()
 
 
 if __name__ == "__main__":

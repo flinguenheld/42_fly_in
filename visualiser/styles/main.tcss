@@ -1,0 +1,17 @@
+# Theme colours:
+#   - primary
+#   - secondary
+#   - accent
+#   - foreground
+#   - background
+#   - success
+#   - warning
+#   - error
+#   - surface
+#   - panel
+
+TTitle {
+	color: $primary;
+	content-align: center middle;
+	# border: round red;
+}
