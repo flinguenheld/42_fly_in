@@ -16,14 +16,14 @@ class Point:
         y: int | None = None,
     ) -> None:
         """2D point, saved with row/col values"""
-        if x and y:
-            self.row: int = y
-            self.col: int = x
-        else:
-            self.row: int = row
-            self.col: int = col
+        self.row: int = row
+        self.col: int = col
 
-    def __str__(self):
+        if x and y:
+            self.row = y
+            self.col = x
+
+    def __str__(self) -> str:
         return f"({self.row})/{self.col})"
 
     # ########################################################################

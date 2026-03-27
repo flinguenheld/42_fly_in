@@ -1,4 +1,3 @@
-import asyncio
 from textual.widgets import Header, Footer
 from textual.app import App, ComposeResult
 
@@ -9,7 +8,7 @@ class TVisual(App):
     CSS_PATH = ["styles/main.tcss"]
     BINDINGS = [("t", "test", "test baby")]
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._title = TTitleMain()
 

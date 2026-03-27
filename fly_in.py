@@ -1,7 +1,7 @@
 from visualiser.tvisual import TVisual
 
 
-def main():
+def main() -> None:
     print("Welcome to fly-in!")
 
     app = TVisual()
