@@ -1,11 +1,14 @@
+from textual.containers import Vertical, VerticalGroup
+from textual import work
 from textual.widgets import Header, Footer
 from textual.app import App, ComposeResult
 
+from visualiser.tfile import TFile
 from visualiser.ttitle import TTitleMain
 
 
 class TVisual(App):
-    CSS_PATH = ["styles/main.tcss"]
+    CSS_PATH = ["styles/main.tcss", "styles/file.tcss"]
     BINDINGS = [("t", "test", "test baby")]
 
     def __init__(self) -> None:
@@ -20,5 +23,7 @@ class TVisual(App):
     async def on_mount(self) -> None:
         self._title.launch_animation()
 
+    @work
     async def action_test(self) -> None:
-        pass
+        await self.push_screen_wait(TFile())
+        # self.push_screen(TFile())
