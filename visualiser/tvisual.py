@@ -1,10 +1,9 @@
-from textual.containers import Vertical, VerticalGroup
+from visualiser.tfile import TFile
+from visualiser.ttitle import TTitleMain
+
 from textual import work
 from textual.widgets import Header, Footer
 from textual.app import App, ComposeResult
-
-from visualiser.tfile import TFile
-from visualiser.ttitle import TTitleMain
 
 
 class TVisual(App):
