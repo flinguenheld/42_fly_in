@@ -60,15 +60,23 @@ class TTitleMain(TTitle):
             """,
         ]
 
+    async def _fly(self, speed: float, times: int) -> None:
+        for _ in range(times):
+            for i in range(len(self._titles)):
+                await asyncio.sleep(speed)
+                self._current = i
+
     @override
     async def _run_animation(self) -> None:
         while True:
-            await asyncio.sleep(random.randint(2, 20))
+            await asyncio.sleep(random.randint(2, 40))
 
-            speed = random.randint(2, 20)
-            for _ in range(random.randint(5, 20)):
-                for i in range(len(self._titles)):
-                    await asyncio.sleep(speed / 100)
-                    self._current = i
+            for speed in range(20, 3, -1):
+                await self._fly(speed / 100, 1)
+
+            await self._fly(0.03, random.randint(20, 60))
+
+            for speed in range(3, 20, 1):
+                await self._fly(speed / 100, 1)
 
             self._current = 0
