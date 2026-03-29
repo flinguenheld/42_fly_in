@@ -1,5 +1,6 @@
 from visualiser.tfile import TFile
 from visualiser.ttitle import TTitleMain
+from visualiser.tmessage import TMessageError
 
 from textual import work
 from textual.widgets import Header, Footer
@@ -7,7 +8,7 @@ from textual.app import App, ComposeResult
 
 
 class TVisual(App):
-    CSS_PATH = ["styles/main.tcss", "styles/file.tcss"]
+    CSS_PATH = ["styles/main.tcss", "styles/file.tcss", "styles/message.tcss"]
     BINDINGS = [("t", "test", "test baby")]
 
     def __init__(self) -> None:
@@ -19,10 +20,15 @@ class TVisual(App):
         yield self._title
         yield Footer()
 
-    async def on_mount(self) -> None:
-        self._title.launch_animation()
+    def on_mount(self) -> None:
+        self.theme = "gruvbox"
 
     @work
     async def action_test(self) -> None:
-        await self.push_screen_wait(TFile())
+        file_path = await self.push_screen_wait(TFile())
+
+        if file_path:
+            # self.push_screen(TMessageSuccess(f"file:\n{file_path}"))
+            self.push_screen(TMessageError(f"file:\n{file_path}"))
+
         # self.push_screen(TFile())

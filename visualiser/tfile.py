@@ -77,7 +77,6 @@ class TFile(ModalScreen):
 
     async def on_mount(self) -> None:
         self._init_choices()
-        self._ttitle.launch_animation()
 
     # ########################################################################
     # ############################################################ CANCEL ####
@@ -107,5 +106,10 @@ class TFile(ModalScreen):
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀▀▀░░▀░░▀▀▀░▀░▀░░░▀░░░▀▀▀░▀▀▀░▀▀▀
 class TItemFile(ListItem):
     def __init__(self, path: str):
-        super().__init__(Label(content=path[7:], classes="tfile_item"))
+        super().__init__(
+            Label(
+                content=path[7:].replace("/", " / "),
+                classes="tfile_item",
+            )
+        )
         self.path = path
