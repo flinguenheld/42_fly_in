@@ -1,7 +1,9 @@
-import functools
-from visualiser.tmessage import TMessageSuccess
-from typing import Optional, List, Dict, Iterator
 import os
+from point import Point
+from models.hub import Hub
+from models.map import Map
+
+from typing import Optional, List, Dict, Iterator
 
 
 class ErrorFile(Exception):
@@ -11,14 +13,14 @@ class ErrorFile(Exception):
 class FileParser:
     def __init__(self):
         self._path: Optional[str] = None
-        self._values: Dict[str, str] = dict()
+        self._new_map = Map()
 
     def up_file(self, path: str) -> None:
         if not os.path.isfile(path):
             raise ErrorFile(f"File '{path}' does not exist.")
 
         self._path = path
-        self._values.clear()
+        self._new_map = Map(os.path.basename(path))
 
     def parse_file(self) -> None:
         if self._path:
@@ -45,53 +47,73 @@ class FileParser:
                 f"File '{self._path}' does not start with 'nb_drones: '."
             )
 
-        self._values["nb_drones"] = first_line[10:].strip()
+        # TODO: Any check conversion ?????
+        self._new_map.nb_drones = int(first_line[10:].strip())
 
     # ########################################################################
     # ############################################################## HUBS ####
     def _get_hubs(self, lines: Iterator[str]):
-        hub = {}
-
         for line in lines:
             try:
-                fields = line.split()
-                if fields[0] != "hub:":
-                    self._raise_error(f"{line} does not start with 'hub: '")
+                line = self._is_hub_line_valid(line)
 
-                hub["name"] = fields[1]
-                hub["point"] = (fields[2], fields[3])
-                # if len(fields) == 5:
-                hub["options"] = self._extract_options(fields[4])
+                it = iter(line.split())
+
+                start = next(it)
+                if start != "hub:":
+                    self._raise_error(
+                        f"{line[:10]} does not start with 'hub: '"
+                    )
+
+                # Name --
+                name = next(it)
+
+                # TODO: Check if there is already a hub with this name
+                # if name in self._values:
+                # self._raise_error(f"Duplicated hub: '{name}'")
+
+                # Coordinates --
+                try:
+                    point = Point.new_from_xy(next(it), next(it))
+                except Exception:
+                    self._raise_error(
+                        f"Parsing hub '{name}' fail:\nInvalid coordinates.",
+                    )
+
+                new_hub = Hub(name, point)
+
+                if next(it) == "[":
+                    while True:
+                        option = next(it, None)
+                        if option:
+                            pass
+
+                        else:
+                            break
+
+                self._new_map.add_hub(new_hub)
 
             except ErrorFile as e:
-                raise e
+                self._raise_error(f"Parsing hub fail: {str(e)}")
             except Exception as e:
-                self._raise_error(f"Parsing hub fail. {str(e)}")
+                self._raise_error(f"Parsing hub fail. '{str(e)}'")
 
-        if not hub:
+        if not self._new_map.hubs:
             self._raise_error("No hub found.")
 
-    def _extract_options(self, line: str):
-        nb_open = functools.reduce(
-            lambda s, c: s + 1 if c == "[" else s, line, 0
-        )
-        nb_clos = functools.reduce(
-            lambda s, c: s + 1 if c == "]" else s, line, 0
-        )
+    # ########################################################################
+    # ########################################################### OPTIONS ####
 
-        raise ErrorFile(f"open: {nb_open} - {nb_clos}")
+    def _is_hub_line_valid(self, line: str) -> str:
+        line = line.strip()
 
-        if nb_open != nb_clos or nb_open > 1 or not line.endswith("]\n"):
-            self._raise_error(f"{line}\nInvalid option format.")
+        nb_open = sum(1 for c in line if c == "[")
+        nb_clos = sum(1 for c in line if c == "]")
 
-            if nb_clos == 0:
-                return
+        # if nb_open != nb_clos or nb_open > 1 or not line.endswith("]\n"):
+        #     raise ErrorFile(f"'{line[:10]}...'\nInvalid option format.")
 
-            options = line.split("[", maxsplit=1)
-            options = options.remove("]")
-
-            raise (ErrorFile(str(options)))
-            # print(options)
+        return line.replace("[", " [ ").replace("]", " ] ")
 
     # ########################################################################
     # ############################################ RAISE FORMATED MESSAGE ####
@@ -101,8 +123,12 @@ class FileParser:
     # ########################################################################
     # ############################################################### STR ####
     def __str__(self) -> str:
+        # if not self._values:
+        #     return "Nothing to display"
+        # else:
+        return f"Values parsed:\n{self._new_map}"
 
-        if not self._values:
-            return "Nothing to display"
-        else:
-            return f"Values parsed:\n{self._values}"
+
+class LineParser:
+    def __init__(self, line: str):
+        self._line = line
