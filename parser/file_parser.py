@@ -29,7 +29,7 @@ class FileParser:
                     lines: List[str] = [
                         line
                         for line in file.readlines()
-                        if line and not line.startswith("#")
+                        if line and line.strip() and not line.startswith("#")
                     ]
 
                     if not lines:
