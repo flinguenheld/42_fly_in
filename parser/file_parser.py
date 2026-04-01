@@ -6,20 +6,12 @@ from models.hub import Hub, ErrorHub
 from typing import Optional, List, Iterator
 
 
-class ErrorFile(Exception):
-    def __init__(self, file: str | None, message: str) -> None:
-        if file:
-            super().__init__(f"File '{file}': {message}")
-        else:
-            super().__init__(f"Error file: {message}")
-
-
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░▀█▀░█░░░█▀▀░░░█▀█░█▀█░█▀▄░█▀▀░█▀▀░█▀▄
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░░█░░█░░░█▀▀░░░█▀▀░█▀█░█▀▄░▀▀█░█▀▀░█▀▄
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀▀▀░▀▀▀░▀▀▀░░░▀░░░▀░▀░▀░▀░▀▀▀░▀▀▀░▀░▀
 class FileParser:
-    def __init__(self):
+    def __init__(self) -> None:
         self._path: Optional[str] = None
         self._new_map = Map()
 
@@ -51,7 +43,7 @@ class FileParser:
 
     # ########################################################################
     # ######################################################### NB DRONES ####
-    def _get_nb_drones(self, first_line: str):
+    def _get_nb_drones(self, first_line: str) -> None:
         if not first_line.startswith("nb_drones: "):
             raise ErrorFile(self._path, "Does not start with 'nb_drones: '.")
 
@@ -65,10 +57,10 @@ class FileParser:
 
     # ########################################################################
     # ############################################################## HUBS ####
-    def _get_hubs(self, lines: Iterator[str]):
+    def _get_hubs(self, lines: Iterator[str]) -> None:
         for line in lines:
             try:
-                self._new_map.add_hub(Hub.parse(line))
+                self._new_map.hubs = Hub.parse(line)
 
             except ErrorHub as e:
                 raise ErrorFile(
@@ -104,3 +96,15 @@ class FileParser:
 class LineParser:
     def __init__(self, line: str):
         self._line = line
+
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█▀▄░█▀▄░█▀█░█▀▄
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█▀▄░█▀▄░█░█░█▀▄
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀▀▀░▀░▀░▀░▀░▀▀▀░▀░▀
+class ErrorFile(Exception):
+    def __init__(self, file: str | None, message: str) -> None:
+        if file:
+            super().__init__(f"On file '{file}':\n{message}")
+        else:
+            super().__init__(f"Error file:\n{message}")

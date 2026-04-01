@@ -30,9 +30,9 @@ class TVisual(App):
 
     @work
     async def action_test(self) -> None:
-        # ####################################################### TESTS #################
-        # file_path = await self.push_screen_wait(TFile())
-        file_path = "./maps/hello.txt"
+        # ############################################### TESTS #################
+        file_path = await self.push_screen_wait(TFile())
+        # file_path = "./maps/hello.txt"
 
         if not file_path:
             self.push_screen(TMessageError(f"file:\n{file_path}"))
