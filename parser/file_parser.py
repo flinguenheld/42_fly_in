@@ -36,7 +36,9 @@ class FileParser:
                         raise ErrorFile(self._path, "Empty.")
 
                     self._get_nb_drones(lines[0])
-                    self._get_hubs(ln for ln in lines if ln.startswith("hub:"))
+                    self._get_hubs(
+                        ln for ln in lines if "hub" in ln.split()[0]
+                    )
 
             except ErrorFlyIn as e:
                 raise ErrorFile(self._path, f"\n'{e}")

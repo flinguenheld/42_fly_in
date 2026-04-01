@@ -1,4 +1,5 @@
 from __future__ import annotations
+from enum import Enum
 from error import ErrorFlyIn
 from point import Point
 
@@ -8,24 +9,48 @@ from point import Point
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀█░█░█░█▀▄
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░▀░▀▀▀░▀▀░
 class Hub:
-    def __init__(self, name: str, point: Point):
-        self._name = name
+    class Type(Enum):
+        REGULAR = 0
+        START = 1
+        END = 2
+
+    def __init__(self, name: str, point: Point, type: Hub.Type = Type.REGULAR):
+        self.name = name
         self._point = point
+        self._type = type
 
     # ########################################################################
     # ######################################################### ACCESSORS ####
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self, txt: str) -> None:
+        if "-" in txt:
+            raise ErrorHub(f"Dashes are forbidden in hub name ({txt}).")
+        self._name = txt
+
     @property
     def point(self) -> Point:
         return self._point
 
     @property
-    def name(self) -> str:
-        return self._name
+    def type(self) -> Hub.Type:
+        return self._type
 
     # ########################################################################
     # ############################################################### STR ####
     def __str__(self) -> str:
-        return f"Hub: {self._name} {self._point}"
+        match self.type:
+            case Hub.Type.REGULAR:
+                title = "Hub :"
+            case Hub.Type.START:
+                title = "Hub (start):"
+            case Hub.Type.END:
+                title = "Hub (end):"
+
+        return f"{title} {self._name} {self._point}"
 
     # ########################################################################
     # ############################################################# PARSE ####
@@ -42,9 +67,16 @@ class Hub:
         try:
             it = iter(text.split())
 
-            start = next(it)
-            if start != "hub:":
-                raise ErrorHub(f"{text[:10]} does not start with 'hub: '")
+            # Starting line --
+            match next(it):
+                case "start_hub:":
+                    type = Hub.Type.START
+                case "end_hub:":
+                    type = Hub.Type.END
+                case "hub:":
+                    type = Hub.Type.REGULAR
+                case _:
+                    raise ErrorHub(f"{text[:10]} does not start with 'hub: '")
 
             # Name --
             name = next(it)
@@ -54,7 +86,7 @@ class Hub:
 
             # Options ?
 
-            return Hub(name, point)
+            return Hub(name, point, type)
 
         except Exception as e:
             raise ErrorHub(str(e))

@@ -32,6 +32,11 @@ class Map:
         if any(h.point == hub.point for h in self._hubs):
             raise ErrorMap(f"There is already a hub at {hub.point}.")
 
+        if hub.type != Hub.Type.REGULAR and any(
+            h.type == hub.type for h in self._hubs
+        ):
+            raise ErrorMap(f"There is already a {hub.type} in the map.")
+
         self._hubs.append(hub)
 
     # ########################################################################
@@ -48,10 +53,35 @@ class Map:
         self._nb_drones = nb
 
     # ########################################################################
+    # ############################################################# VALID ####
+    @property
+    def valid(self) -> bool:
+        """
+        Perform tests and raise an ErrorMap on any invalid one
+        Return True
+        """
+
+        if self._nb_drones < 1:
+            raise ErrorMap("Map needs at least one drone")
+
+        if not any(h.point == Hub.Type.START for h in self._hubs):
+            raise ErrorMap("Map needs at least one starting hub")
+
+        if not any(h.point == Hub.Type.END for h in self._hubs):
+            raise ErrorMap("Map needs at least one ending hub")
+
+        if not any(h.point == Hub.Type.REGULAR for h in self._hubs):
+            raise ErrorMap("Map needs at least one REGULAR hub")
+
+        return True
+
+    # ########################################################################
     # ############################################################### STR ####
     def __str__(self) -> str:
         return (
-            f"Map: {self._name} - {self.nb_drones} "
+            f"Map: {self._name}\n"
+            f"Nb drones: {self.nb_drones}\n"
+            f"Hubs ({len(self._hubs)}):\n"
             f"{'\n'.join((str(h) for h in self._hubs))}"
         )
 
