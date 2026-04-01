@@ -10,6 +10,9 @@
 #   - surface
 #   - panel
 
+# Align:
+# top right bot left 
+
 TMessage {
 	align: center middle;
 }
@@ -17,17 +20,20 @@ TMessage {
 # #############################################################
 # ################################################# COMMON ####
 .tmessage_layout_base {
-	width: 80;
-	height: 22;
+	width: 85;
+	height: 26;
 
 	content-align: center middle;
 	border: round red;
 }
+.tmessage_scroll {
+	height: 12;
+	margin: 0 0 2 0;
+}
 
 .tmessage_label {
 	width: 100%;
-	height: 10;
-	padding: 1;
+	height: auto;
 
     text-align: center;
 	content-align: center middle;
@@ -41,7 +47,7 @@ TMessage {
 # #############################################################
 # ################################################## ERROR ####
 .ttitle_error {
-	margin: 0;
+	margin: 0 0 1 0;
 }
 
 .tmessage_font_error {
@@ -55,7 +61,8 @@ TMessage {
 # #############################################################
 # ################################################ SUCCESS ####
 .ttitle_success {
-	margin: 0;
+	# top right bot left 
+	margin: 0 0 1 0;
 }
 
 .tmessage_font_success {

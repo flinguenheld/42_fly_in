@@ -1,7 +1,7 @@
 from textual.app import ComposeResult
 from textual.screen import ModalScreen
 from textual.widgets import Label, Button
-from textual.containers import Vertical, Center
+from textual.containers import Vertical, Center, VerticalScroll
 
 from visualiser.ttitle import TTitle, TTitleError, TTitleSuccess
 
@@ -39,7 +39,10 @@ class TMessage(ModalScreen):
     def compose(self) -> ComposeResult:
         with self._layout:
             yield self._title
-            yield self._message
+
+            with VerticalScroll(classes="tmessage_scroll"):
+                yield self._message
+
             with Center():
                 yield self._bt_close
 
