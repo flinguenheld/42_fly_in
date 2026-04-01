@@ -1,7 +1,13 @@
 from __future__ import annotations
+from error import ErrorFlyIn
 from functools import singledispatch
 from math import sqrt
 from typing import Tuple
+
+
+class ErrorPoint(ErrorFlyIn):
+    def __init__(self, message: str) -> None:
+        super().__init__(f"Point error: {message}")
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -19,7 +25,17 @@ class Point:
         self.col: int = col
 
     # ########################################################################
+    # ############################################################# PARSE ####
+    @staticmethod
+    def parse(x: str, y: str) -> Point:
+        try:
+            return Point(int(y), int(x))
+        except ValueError:
+            raise ErrorPoint(f"Impossible to convert '({x},{y})'")
+
+    # ########################################################################
     # ############################################################# X / Y ####
+
     @property
     def xy(self) -> Tuple[int, int]:
         return (self.col, self.row)
@@ -57,4 +73,4 @@ class Point:
     # ########################################################################
     # ############################################################### STR ####
     def __str__(self) -> str:
-        return f"({self.row})/{self.col})"
+        return f"({self.row},{self.col})"

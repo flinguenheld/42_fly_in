@@ -1,7 +1,17 @@
+from error import ErrorFlyIn
 from typing import List
 from models.hub import Hub
 
 
+class ErrorMap(ErrorFlyIn):
+    def __init__(self, message: str) -> None:
+        super().__init__(f"Map error:\n{message}")
+
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▄█░█▀█░█▀█
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░█░█▀█░█▀▀
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░▀░▀░▀░▀░░
 class Map:
     def __init__(self, name: str = "No name"):
         self._name = name
@@ -26,5 +36,12 @@ class Map:
             raise ValueError("Map: nb drones cannot be <= 0")
         self._nb_drones = nb
 
+    # ########################################################################
+    # ############################################################### STR ####
     def __str__(self):
-        return f"Map: {self._name} - {self.nb_drones} - {self._hubs}"
+
+        hubs = "hubs:\n"
+        for hub in self._hubs:
+            hubs += f"{hub}\n"
+
+        return f"Map: {self._name} - {self.nb_drones}{hubs}"
