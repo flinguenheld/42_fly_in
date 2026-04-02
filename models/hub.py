@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Set, Any
 from enum import Enum
 from error import ErrorFlyIn
 from point import Point
@@ -15,12 +16,23 @@ class Hub:
         END = 2
 
     def __init__(self, name: str, point: Point, type: Hub.Type = Type.REGULAR):
-        self.name = name
-        self._point = point
-        self._type = type
+        self.name: str = name
+        self._point: Point = point
+        self._type: Hub.Type = type
+        self._next: Set[Hub] = set()
 
     # ########################################################################
-    # ######################################################### ACCESSORS ####
+    # ############################################################## NEXT ####
+    @property
+    def next(self) -> Set:
+        return self._next
+
+    def __iadd__(self, other: Hub) -> Hub:
+        self._next.add(other)
+        return self
+
+    # ########################################################################
+    # ############################################################## NAME ####
     @property
     def name(self) -> str:
         return self._name
@@ -31,6 +43,8 @@ class Hub:
             raise ErrorHub(f"Dashes are forbidden in hub name ({txt}).")
         self._name = txt
 
+    # ########################################################################
+    # ###################################################### POINT / TYPE ####
     @property
     def point(self) -> Point:
         return self._point

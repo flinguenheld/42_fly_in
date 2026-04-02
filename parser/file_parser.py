@@ -1,3 +1,4 @@
+from mypy.plugins.singledispatch import call_singledispatch_function_callback
 from error import ErrorFlyIn
 import os
 from models.map import Map
@@ -39,6 +40,9 @@ class FileParser:
                     self._get_hubs(
                         ln for ln in lines if "hub" in ln.split()[0]
                     )
+                    self._get_connexions(
+                        ln for ln in lines if ln.startswith("connexion: ")
+                    )
 
             except ErrorFlyIn as e:
                 raise ErrorFile(self._path, f"\n'{e}")
@@ -62,7 +66,7 @@ class FileParser:
     def _get_hubs(self, lines: Iterator[str]) -> None:
         for line in lines:
             try:
-                self._new_map.hubs = Hub.parse(line)
+                self._new_map += Hub.parse(line)
 
             except ErrorHub as e:
                 raise ErrorFile(
@@ -71,6 +75,31 @@ class FileParser:
 
         if not self._new_map.hubs:
             raise ErrorFile(self._path, "No hub found.")
+
+    # ########################################################################
+    # ######################################################## CONNEXIONS ####
+    def _get_connexions(self, lines: Iterator[str]) -> None:
+        for line in lines:
+            header, connexion = line.split(maxsplit=1)
+
+            if header != "connexion: ":
+                raise ErrorFile(
+                    self._path, f"Line '{line[:10]}' is not a connexion."
+                )
+
+            if sum(1 for c in connexion if c == "-") != 1:
+                raise ErrorFile(
+                    self._path, f"Line '{line[:10]}' is an invalid connexion."
+                )
+
+            hub_from, hub_to = connexion.split(maxsplit=1)
+
+            if len(hub_from) < 3 or len(hub_to) < 3:
+                raise ErrorFile(
+                    self._path, f"Connexion invalid {hub_from} -> {hub_to}"
+                )
+
+            self._new_map.connect_hubs(hub_from, hub_to)
 
     # ########################################################################
     # ########################################################### OPTIONS ####

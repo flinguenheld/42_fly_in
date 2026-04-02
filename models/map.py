@@ -1,3 +1,4 @@
+from __future__ import annotations
 from error import ErrorFlyIn
 from typing import List
 from models.hub import Hub
@@ -9,8 +10,8 @@ from models.hub import Hub
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░▀░▀░▀░▀░░
 class Map:
     def __init__(self, name: str = "No name") -> None:
-        self._name = name
-        self._nb_drones = 0
+        self._name: str = name
+        self._nb_drones: int = 0
         self._hubs: List[Hub] = []
 
     # ########################################################################
@@ -19,8 +20,7 @@ class Map:
     def hubs(self) -> List[Hub]:
         return self._hubs
 
-    @hubs.setter
-    def hubs(self, hub: Hub) -> None:
+    def __iadd__(self, hub: Hub) -> Map:
         """
         Add the hub inside the map
 
@@ -38,6 +38,23 @@ class Map:
             raise ErrorMap(f"There is already a {hub.type} in the map.")
 
         self._hubs.append(hub)
+        return self
+
+    def connect_hubs(self, from_name: str, to_name: str) -> None:
+        """
+        Add 'to' to 'from'
+
+        Raise ErrorMap to or from hubs are not found in the hub list
+        """
+        hub_from = next((h for h in self._hubs if h.name == from_name), None)
+        hub_to = next((h for h in self._hubs if h.name == to_name), None)
+
+        if not hub_from:
+            raise ErrorMap(f"{from_name} doesn't exist in the map.")
+        if not hub_to:
+            raise ErrorMap(f"{to_name} doesn't exist in the map.")
+
+        hub_from += hub_to
 
     # ########################################################################
     # ######################################################### NB DRONES ####
