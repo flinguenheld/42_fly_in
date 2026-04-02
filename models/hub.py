@@ -16,19 +16,19 @@ class Hub:
         END = 2
 
     def __init__(self, name: str, point: Point, type: Hub.Type = Type.REGULAR):
-        self.name: str = name
+        self.name = name
         self._point: Point = point
         self._type: Hub.Type = type
-        self._next: Set[Hub] = set()
+        self._next_nodes: Set[Hub] = set()
 
     # ########################################################################
     # ############################################################## NEXT ####
     @property
-    def next(self) -> Set:
-        return self._next
+    def next_nodes(self) -> Set[Hub]:
+        return self._next_nodes
 
     def __iadd__(self, other: Hub) -> Hub:
-        self._next.add(other)
+        self._next_nodes.add(other)
         return self
 
     # ########################################################################
@@ -64,7 +64,7 @@ class Hub:
             case Hub.Type.END:
                 title = "Hub (end):"
 
-        return f"{title} {self._name} {self._point}"
+        return f"{title} {self._name} {self._point} '{self._next_nodes}'"
 
     # ########################################################################
     # ############################################################# PARSE ####

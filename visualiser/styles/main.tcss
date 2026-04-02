@@ -10,8 +10,26 @@
 #   - surface
 #   - panel
 
+Screen {
+	layout: vertical;
+	border: round $primary;
+	content-align: center middle;
+}
+
+.layout_canvas {
+	align: center middle;
+}
+
 TTitle {
 	color: $primary;
 	content-align: center middle;
-	# border: round red;
+}
+
+Canvas {
+	width: auto;
+	height: auto;
+	border: round $primary;
+	background: $background;
+	# align: center middle;
+	# content-align: center middle;
 }

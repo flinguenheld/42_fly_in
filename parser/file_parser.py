@@ -1,7 +1,6 @@
-from mypy.plugins.singledispatch import call_singledispatch_function_callback
-from error import ErrorFlyIn
 import os
 from models.map import Map
+from error import ErrorFlyIn
 from models.hub import Hub, ErrorHub
 
 from typing import Optional, List, Iterator
@@ -23,6 +22,15 @@ class FileParser:
         self._path = path
         self._new_map = Map(os.path.basename(path))
 
+    # ########################################################################
+    # ########################################################### GET MAP ####
+    @property
+    def map(self) -> Map | None:
+        if self._new_map:
+            # TODO: ADD SOME CHECKS ????
+            return self._new_map
+        return None
+
     def parse_file(self) -> None:
         if self._path:
             try:
@@ -40,8 +48,8 @@ class FileParser:
                     self._get_hubs(
                         ln for ln in lines if "hub" in ln.split()[0]
                     )
-                    self._get_connexions(
-                        ln for ln in lines if ln.startswith("connexion: ")
+                    self._get_connections(
+                        ln for ln in lines if ln.startswith("connection: ")
                     )
 
             except ErrorFlyIn as e:
@@ -77,26 +85,26 @@ class FileParser:
             raise ErrorFile(self._path, "No hub found.")
 
     # ########################################################################
-    # ######################################################## CONNEXIONS ####
-    def _get_connexions(self, lines: Iterator[str]) -> None:
+    # ####################################################### CONNECTIONS ####
+    def _get_connections(self, lines: Iterator[str]) -> None:
         for line in lines:
-            header, connexion = line.split(maxsplit=1)
+            header, connection = line.split(maxsplit=1)
 
-            if header != "connexion: ":
+            if header != "connection:":
                 raise ErrorFile(
-                    self._path, f"Line '{line[:10]}' is not a connexion."
+                    self._path, f"Line '{line[:10]}' is not a connection."
                 )
 
-            if sum(1 for c in connexion if c == "-") != 1:
+            if sum(1 for c in connection if c == "-") != 1:
                 raise ErrorFile(
-                    self._path, f"Line '{line[:10]}' is an invalid connexion."
+                    self._path, f"Line '{line[:10]}' is an invalid connection."
                 )
 
-            hub_from, hub_to = connexion.split(maxsplit=1)
+            hub_from, hub_to = connection.split("-", maxsplit=1)
 
             if len(hub_from) < 3 or len(hub_to) < 3:
                 raise ErrorFile(
-                    self._path, f"Connexion invalid {hub_from} -> {hub_to}"
+                    self._path, f"Connection invalid {hub_from} -> {hub_to}"
                 )
 
             self._new_map.connect_hubs(hub_from, hub_to)

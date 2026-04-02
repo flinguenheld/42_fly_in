@@ -1,3 +1,7 @@
+from models.map import Map
+from textual.containers import Center, ScrollableContainer
+from textual.canvas import Canvas
+from visualiser.tcanvas import TCanvas
 from visualiser.tfile import TFile
 from visualiser.ttitle import TTitleMain
 from visualiser.tmessage import TMessageError, TMessageSuccess
@@ -5,22 +9,26 @@ from visualiser.tmessage import TMessageError, TMessageSuccess
 from parser.file_parser import FileParser
 
 from textual import work
-from textual.widgets import Header, Footer
+from textual.widgets import Header, Footer, Label
 from textual.app import App, ComposeResult
 
 
 class TVisual(App):
     CSS_PATH = ["styles/main.tcss", "styles/file.tcss", "styles/message.tcss"]
-    BINDINGS = [("t", "test", "test baby")]
+    BINDINGS = [("t", "test", "test baby"), ("d", "draw", "draw")]
 
     def __init__(self) -> None:
         super().__init__()
+        self._canvas = TCanvas()
         self._title = TTitleMain()
         self._parser = FileParser()
+        self._map: Map | None = None
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
         yield self._title
+        with ScrollableContainer(classes="layout_canvas"):
+            yield self._canvas
         yield Footer()
 
     def on_mount(self) -> None:
@@ -31,17 +39,34 @@ class TVisual(App):
     @work
     async def action_test(self) -> None:
         # ############################################### TESTS #################
-        file_path = await self.push_screen_wait(TFile())
+        self._map = None
+        file_path: str = await self.push_screen_wait(TFile())
         # file_path = "./maps/hello.txt"
 
-        if not file_path:
-            self.push_screen(TMessageError(f"file:\n{file_path}"))
-        else:
+        if file_path:
             try:
                 self._parser.up_file(file_path)
                 self._parser.parse_file()
+                self._map = self._parser.map
 
                 self.push_screen(TMessageSuccess(str(self._parser)))
 
             except Exception as e:
                 self.push_screen(TMessageError(str(e)))
+
+    def action_draw(self) -> None:
+        if self._map:
+            self._canvas.draw_circle(10, 10, 2)
+            self.notify(f"blah: {self._map}")
+            start = self._map.start
+            if start:
+                self.notify(f"here: {start.next_nodes}")
+            else:
+                self.notify("NO START !!!!!!!")
+
+            for hub in self._map.loop():
+                self.notify(f"hub: {hub}")
+                self.notify("Hello draw")
+                self._canvas.draw_circle(
+                    hub.point.row * 3, hub.point.col * 3, 2
+                )

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from error import ErrorFlyIn
-from typing import List
+from typing import List, Iterator
 from models.hub import Hub
 
 
@@ -16,6 +16,17 @@ class Map:
 
     # ########################################################################
     # ############################################################## HUBS ####
+
+    def loop(self, current: Hub | None = None):
+
+        if not current:
+            current = self.start
+
+        if current:
+            yield current
+            for node in current.next_nodes:
+                yield node
+                yield from self.loop(node)
 
     # ############################################### START / STOP ####
     # TODO: CHANGE TO ATTRIBUTES ?
@@ -67,6 +78,7 @@ class Map:
         if not hub_to:
             raise ErrorMap(f"{to_name} doesn't exist in the map.")
 
+        # if not hub_from and not hub_to:
         hub_from += hub_to
 
     # ########################################################################
