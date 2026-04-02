@@ -16,10 +16,22 @@ class Map:
 
     # ########################################################################
     # ############################################################## HUBS ####
+
+    # ############################################### START / STOP ####
+    # TODO: CHANGE TO ATTRIBUTES ?
+    @property
+    def start(self) -> Hub | None:
+        return next(h for h in self._hubs if h.type == Hub.Type.START)
+
+    @property
+    def end(self) -> Hub | None:
+        return next(h for h in self._hubs if h.type == Hub.Type.END)
+
     @property
     def hubs(self) -> List[Hub]:
         return self._hubs
 
+    # ######################################################### += ####
     def __iadd__(self, hub: Hub) -> Map:
         """
         Add the hub inside the map
@@ -40,6 +52,7 @@ class Map:
         self._hubs.append(hub)
         return self
 
+    # #################################################### CONNECT ####
     def connect_hubs(self, from_name: str, to_name: str) -> None:
         """
         Add 'to' to 'from'
@@ -72,14 +85,14 @@ class Map:
     # ########################################################################
     # ############################################################# VALID ####
     @property
-    def valid(self) -> bool:
+    def is_valid(self) -> bool:
         """
         Perform tests and raise an ErrorMap on any invalid one
         Return True
         """
 
-        if self._nb_drones < 1:
-            raise ErrorMap("Map needs at least one drone")
+        if self._nb_drones < 2:
+            raise ErrorMap("Map needs at least two drones")
 
         if not any(h.point == Hub.Type.START for h in self._hubs):
             raise ErrorMap("Map needs at least one starting hub")
@@ -89,6 +102,11 @@ class Map:
 
         if not any(h.point == Hub.Type.REGULAR for h in self._hubs):
             raise ErrorMap("Map needs at least one REGULAR hub")
+
+        return True
+
+    # TODO: TEST THE GRAP LOGIC - ARE ALL HUBS CONNECTED ??
+    def test_hubs(self) -> bool:
 
         return True
 

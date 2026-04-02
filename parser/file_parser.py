@@ -102,20 +102,6 @@ class FileParser:
             self._new_map.connect_hubs(hub_from, hub_to)
 
     # ########################################################################
-    # ########################################################### OPTIONS ####
-
-    def _is_hub_line_valid(self, line: str) -> str:
-        line = line.strip()
-
-        nb_open = sum(1 for c in line if c == "[")
-        nb_clos = sum(1 for c in line if c == "]")
-
-        # if nb_open != nb_clos or nb_open > 1 or not line.endswith("]\n"):
-        #     raise ErrorFile(f"'{line[:10]}...'\nInvalid option format.")
-
-        return line.replace("[", " [ ").replace("]", " ] ")
-
-    # ########################################################################
     # ############################################################### STR ####
     def __str__(self) -> str:
         # if not self._values:
