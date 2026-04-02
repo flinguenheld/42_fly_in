@@ -64,7 +64,7 @@ class Hub:
             case Hub.Type.END:
                 title = "Hub (end):"
 
-        return f"{title} {self._name} {self._point} '{self._next_nodes}'"
+        return f"{title} '{self._name}' {self._point} '{self._next_nodes}'"
 
     # ########################################################################
     # ############################################################# PARSE ####

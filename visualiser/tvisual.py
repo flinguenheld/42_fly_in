@@ -1,3 +1,4 @@
+import asyncio
 from models.map import Map
 from textual.containers import Center, ScrollableContainer
 from textual.canvas import Canvas
@@ -54,19 +55,21 @@ class TVisual(App):
             except Exception as e:
                 self.push_screen(TMessageError(str(e)))
 
-    def action_draw(self) -> None:
+    async def action_draw(self) -> None:
         if self._map:
-            self._canvas.draw_circle(10, 10, 2)
-            self.notify(f"blah: {self._map}")
-            start = self._map.start
-            if start:
-                self.notify(f"here: {start.next_nodes}")
-            else:
-                self.notify("NO START !!!!!!!")
+            asyncio.create_task(self._canvas.draw_hubs(self._map))
 
-            for hub in self._map.loop():
-                self.notify(f"hub: {hub}")
-                self.notify("Hello draw")
-                self._canvas.draw_circle(
-                    hub.point.row * 3, hub.point.col * 3, 2
-                )
+    # async def blah(self) -> None:
+    #     if self._map:
+    #         start = self._map.start
+    #         if start:
+    #             self.notify(f"here: {start.next_nodes}")
+    #         else:
+    #             self.notify("NO START !!!!!!!")
+
+    #         for hub in self._map.loop():
+    #             self.notify(f"hub: {hub.point}")
+    #             self._canvas.draw_circle(
+    #                 hub.point.col * 20 + 5, hub.point.row * 20 + 5, 2
+    #             )
+    #             await asyncio.sleep(0.3)

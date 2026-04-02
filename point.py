@@ -28,11 +28,23 @@ class Point:
         except ValueError:
             raise ErrorPoint(f"Impossible to convert '({x},{y})'")
 
+    @staticmethod
+    def from_xy(x: str, y: str) -> Point:
+        return Point(int(y), int(x))
+
     # ########################################################################
     # ############################################################# X / Y ####
     @property
     def xy(self) -> Tuple[int, int]:
         return (self.col, self.row)
+
+    @property
+    def x(self) -> int:
+        return self.col
+
+    @property
+    def y(self) -> int:
+        return self.row
 
     # ########################################################################
     # ###################################################### CALCULATIONS ####
@@ -51,11 +63,27 @@ class Point:
         return f"({self.row},{self.col})"
 
     # ########################################################################
-    # ############################################################# EQUAL ####
+    # ######################################################### OPERATORS ####
+    def __add__(self, other: Any) -> Point:
+        if isinstance(other, Point):
+            return Point(self.row + other.row, self.col + other.col)
+        if isinstance(other, int):
+            return Point(self.row + other, self.col + other)
+
+        raise ErrorPoint("Operator 'add' only allows Points or int")
+
+    def __mul__(self, other: Any) -> Point:
+        if isinstance(other, Point):
+            return Point(self.row * other.row, self.col * other.col)
+        if isinstance(other, int):
+            return Point(self.row * other, self.col * other)
+
+        raise ErrorPoint("Operator 'mul' only allows Points or int")
+
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, Point):
             return self.row == other.row and self.col == other.col
-        return False
+        raise ErrorPoint("Operator 'equal' only allows Points")
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░

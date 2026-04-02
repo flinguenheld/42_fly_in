@@ -74,6 +74,7 @@ class FileParser:
     def _get_hubs(self, lines: Iterator[str]) -> None:
         for line in lines:
             try:
+                line = line.strip()
                 self._new_map += Hub.parse(line)
 
             except ErrorHub as e:
@@ -88,6 +89,7 @@ class FileParser:
     # ####################################################### CONNECTIONS ####
     def _get_connections(self, lines: Iterator[str]) -> None:
         for line in lines:
+            line = line.strip()
             header, connection = line.split(maxsplit=1)
 
             if header != "connection:":
@@ -100,6 +102,7 @@ class FileParser:
                     self._path, f"Line '{line[:10]}' is an invalid connection."
                 )
 
+            # TODO: MANAGE OPTIONS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             hub_from, hub_to = connection.split("-", maxsplit=1)
 
             if len(hub_from) < 3 or len(hub_to) < 3:

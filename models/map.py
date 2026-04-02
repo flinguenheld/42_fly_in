@@ -1,6 +1,6 @@
 from __future__ import annotations
 from error import ErrorFlyIn
-from typing import List, Iterator
+from typing import List, Iterator, Tuple
 from models.hub import Hub
 
 
@@ -17,8 +17,12 @@ class Map:
     # ########################################################################
     # ############################################################## HUBS ####
 
-    def loop(self, current: Hub | None = None):
+    def get_connections(self) -> Iterator[Tuple[Hub, Hub]]:
+        for hub in self._hubs:
+            for nxt in hub.next_nodes:
+                yield (hub, nxt)
 
+    def loop(self, current: Hub | None = None):
         if not current:
             current = self.start
 
@@ -74,11 +78,14 @@ class Map:
         hub_to = next((h for h in self._hubs if h.name == to_name), None)
 
         if not hub_from:
-            raise ErrorMap(f"{from_name} doesn't exist in the map.")
+            raise ErrorMap(
+                f"Connect hub: '{from_name}' doesn't exist in the map."
+            )
         if not hub_to:
-            raise ErrorMap(f"{to_name} doesn't exist in the map.")
+            raise ErrorMap(
+                f"Connect hub: '{to_name}' doesn't exist in the map."
+            )
 
-        # if not hub_from and not hub_to:
         hub_from += hub_to
 
     # ########################################################################
@@ -119,7 +126,6 @@ class Map:
 
     # TODO: TEST THE GRAP LOGIC - ARE ALL HUBS CONNECTED ??
     def test_hubs(self) -> bool:
-
         return True
 
     # ########################################################################
