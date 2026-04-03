@@ -1,6 +1,12 @@
+from visualiser.tmap import TMap
 import asyncio
 from models.map import Map
-from textual.containers import Center, ScrollableContainer
+from textual.containers import (
+    Center,
+    ScrollableContainer,
+    VerticalGroup,
+    Vertical,
+)
 from textual.canvas import Canvas
 from visualiser.tcanvas import TCanvas
 from visualiser.tfile import TFile
@@ -20,16 +26,19 @@ class TVisual(App):
 
     def __init__(self) -> None:
         super().__init__()
-        self._canvas = TCanvas()
+        # self._canvas = TCanvas()
+        self._tmap = TMap()
         self._title = TTitleMain()
         self._parser = FileParser()
         self._map: Map | None = None
+        self._layout = ScrollableContainer(classes="tmap_layout")
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
-        yield self._title
-        with ScrollableContainer(classes="layout_canvas"):
-            yield self._canvas
+        with Vertical():
+            yield self._title
+            with self._layout:
+                yield self._tmap
         yield Footer()
 
     def on_mount(self) -> None:
@@ -49,6 +58,8 @@ class TVisual(App):
                 self._parser.up_file(file_path)
                 self._parser.parse_file()
                 self._map = self._parser.map
+                if self._map:
+                    self._tmap.new_canvas(self._map)
 
                 self.push_screen(TMessageSuccess(str(self._parser)))
 
@@ -57,7 +68,9 @@ class TVisual(App):
 
     async def action_draw(self) -> None:
         if self._map:
-            asyncio.create_task(self._canvas.draw_hubs(self._map))
+            # self._tmap.new_canvas(self._map)
+            # self._canvas.up_my_ass(self._map)
+            asyncio.create_task(self._tmap.draw_hubs(self._map))
 
     # async def blah(self) -> None:
     #     if self._map:

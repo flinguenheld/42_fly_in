@@ -25,11 +25,29 @@ TTitle {
 	content-align: center middle;
 }
 
+TMap {
+	width: 100%;
+	height: 100%;
+	border: round red;
+	# align: center middle;
+}
+
+.tmap_layout {
+	width: 100%;
+	height: 100%;
+	# width: auto;
+	# height: auto;
+
+	align: center middle;
+	# content-align: center middle;
+	border: round orange;
+}
+
 Canvas {
 	width: auto;
 	height: auto;
 	border: round $primary;
 	background: $background;
-	# align: center middle;
+	align: center middle;
 	# content-align: center middle;
 }
