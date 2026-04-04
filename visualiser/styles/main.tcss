@@ -16,38 +16,33 @@ Screen {
 	content-align: center middle;
 }
 
-.layout_canvas {
-	align: center middle;
-}
-
 TTitle {
 	color: $primary;
 	content-align: center middle;
 }
 
+# ############################################################
+# ########################################## MAP / CANVAS ####
 TMap {
 	width: 100%;
-	height: 100%;
-	border: round red;
-	# align: center middle;
+	height: 94%;
+	content-align: center middle;
+	border: round $panel;
 }
 
 .tmap_layout {
-	width: 100%;
-	height: 100%;
-	# width: auto;
-	# height: auto;
-
-	align: center middle;
-	# content-align: center middle;
-	border: round orange;
+	# border: round orange;
 }
 
 Canvas {
 	width: auto;
 	height: auto;
-	border: round $primary;
+
+	margin: 1;
 	background: $background;
+	# border: round $panel;
+}
+
+.layout_canvas {
 	align: center middle;
-	# content-align: center middle;
 }

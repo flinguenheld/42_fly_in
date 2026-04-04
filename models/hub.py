@@ -1,8 +1,8 @@
 from __future__ import annotations
-from typing import Set, Any
 from enum import Enum
-from error import ErrorFlyIn
+from typing import Set
 from point import Point
+from error import ErrorFlyIn
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░

@@ -1,12 +1,16 @@
 from typing import Tuple
-import asyncio
+from textual.color import Color
+from textual_canvas import Canvas
 
 from point import Point
 from models.hub import Hub
 from models.map import Map
-from textual_canvas import Canvas
 
 
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░█▀▀░█▀█░█▀█░█░█░█▀█░█▀▀
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░█░░░█▀█░█░█░▀▄▀░█▀█░▀▀█
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀▀▀░▀░▀░▀░▀░░▀░░▀░▀░▀▀▀
 class TCanvas(Canvas):
     _SCALE: int = 30
     _RADIUS: int = 2
@@ -45,7 +49,7 @@ class TCanvas(Canvas):
 
     # ########################################################################
     # ######################################################### SET SHIFT ####
-    def _set_shift(self):
+    def _set_shift(self) -> None:
         if self._map.hubs:
             min_row: Hub = min(self._map.hubs, key=lambda h: h.point.row)
             min_col: Hub = min(self._map.hubs, key=lambda h: h.point.col)
@@ -68,14 +72,16 @@ class TCanvas(Canvas):
         return point * TCanvas._SCALE + self._shift
 
     # ########################################################################
-    # #################################################### DRAW FUNCTIONS ####
-    def _draw_circle(self, center: Point, color=None) -> None:
+    # ################################################# DRAWING FUNCTIONS ####
+    def draw_adapted_circle(
+        self, center: Point, color: Color | None = None
+    ) -> None:
         point = self._adapt_point(center)
-        self.notify(f"draw this point: {point.xy}")
-
         super().draw_circle(point.x, point.y, TCanvas._RADIUS, color)
 
-    def _draw_line(self, pt_from: Point, pt_to: Point, color=None) -> None:
+    def draw_adapted_line(
+        self, pt_from: Point, pt_to: Point, color: Color | None = None
+    ) -> None:
         fr = self._adapt_point(pt_from)
         to = self._adapt_point(pt_to)
 

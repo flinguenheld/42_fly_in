@@ -1,23 +1,26 @@
-from textual.containers import ScrollableContainer
-from textual.app import ComposeResult
 import asyncio
-from typing import Tuple
-from models.hub import Hub
+from textual.app import ComposeResult
+from textual.containers import ScrollableContainer
+
 from models.map import Map
-from visualiser.tcanvas import TCanvas
 from textual.widget import Widget
+from visualiser.tcanvas import TCanvas
 
 
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░█▄█░█▀█░█▀█
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░█░█░█▀█░█▀▀
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀░▀░▀░▀░▀░░
 class TMap(Widget):
     def __init__(self) -> None:
         super().__init__()
         self._canvas: TCanvas | None = None
-        # self._layout = ScrollableContainer(classes="tmap_layout")
+        self._layout = ScrollableContainer(classes="tmap_layout")
 
     # ########################################################################
     # ########################################################### COMPOSE ####
-    # def compose(self) -> ComposeResult:
-    #     yield self._layout
+    def compose(self) -> ComposeResult:
+        yield self._layout
 
     # ########################################################################
     # ###################################################### RESET CANVAS ####
@@ -31,23 +34,17 @@ class TMap(Widget):
             self._canvas.remove()
 
         self._canvas = TCanvas(map)
-        # self._layout.mount(self._canvas)
-        self.mount(self._canvas)
+        self._layout.mount(self._canvas)
 
-    async def draw_hubs(self, map: Map):
+    # ########################################################################
+    # ######################################################### DRAW HUBS ####
+    async def draw_hubs(self, map: Map) -> None:
 
         if self._canvas:
-            start = map.start
-            if start:
-                self.notify(f"here: {start.next_nodes}")
-            else:
-                self.notify("NO START !!!!!!!")
-
             for hub_from, hub_to in map.get_connections():
-                # self.notify(f"hub: {hub.point}")
-                self._canvas._draw_circle(hub_from.point)
-                await asyncio.sleep(0.05)
-                self._canvas._draw_circle(hub_to.point)
-                await asyncio.sleep(0.05)
-                self._canvas._draw_line(hub_from.point, hub_to.point)
+                self._canvas.draw_adapted_circle(hub_from.point)
                 await asyncio.sleep(0.02)
+                self._canvas.draw_adapted_circle(hub_to.point)
+                await asyncio.sleep(0.02)
+                self._canvas.draw_adapted_line(hub_from.point, hub_to.point)
+                await asyncio.sleep(0.01)

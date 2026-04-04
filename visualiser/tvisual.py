@@ -1,25 +1,21 @@
-from visualiser.tmap import TMap
 import asyncio
+from textual import work
+from textual.containers import Vertical
+from textual.widgets import Header, Footer
+from textual.app import App, ComposeResult
+
 from models.map import Map
-from textual.containers import (
-    Center,
-    ScrollableContainer,
-    VerticalGroup,
-    Vertical,
-)
-from textual.canvas import Canvas
-from visualiser.tcanvas import TCanvas
+from parser.file_parser import FileParser
+from visualiser.tmap import TMap
 from visualiser.tfile import TFile
 from visualiser.ttitle import TTitleMain
 from visualiser.tmessage import TMessageError, TMessageSuccess
 
-from parser.file_parser import FileParser
 
-from textual import work
-from textual.widgets import Header, Footer, Label
-from textual.app import App, ComposeResult
-
-
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░█░█░▀█▀░█▀▀░█░█░█▀█░█░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░▀▄▀░░█░░▀▀█░█░█░█▀█░█░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀░░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀
 class TVisual(App):
     CSS_PATH = ["styles/main.tcss", "styles/file.tcss", "styles/message.tcss"]
     BINDINGS = [("t", "test", "test baby"), ("d", "draw", "draw")]
@@ -31,24 +27,30 @@ class TVisual(App):
         self._title = TTitleMain()
         self._parser = FileParser()
         self._map: Map | None = None
-        self._layout = ScrollableContainer(classes="tmap_layout")
 
+    # ########################################################################
+    # ########################################################### COMPOSE ####
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
         with Vertical():
             yield self._title
-            with self._layout:
-                yield self._tmap
+            yield self._tmap
         yield Footer()
 
+    # ########################################################################
+    # ############################################################# MOUNT ####
     def on_mount(self) -> None:
-        self.theme = "gruvbox"
+        # self.theme = "gruvbox"
+        self.theme = "catppuccin-latte"
 
         self.action_test()
 
+    # ################################################ TESTS #################
+    # ################################################ TESTS #################
+    # ################################################ TESTS #################
+    # ################################################ TESTS #################
     @work
     async def action_test(self) -> None:
-        # ############################################### TESTS #################
         self._map = None
         file_path: str = await self.push_screen_wait(TFile())
         # file_path = "./maps/hello.txt"
@@ -68,21 +70,4 @@ class TVisual(App):
 
     async def action_draw(self) -> None:
         if self._map:
-            # self._tmap.new_canvas(self._map)
-            # self._canvas.up_my_ass(self._map)
             asyncio.create_task(self._tmap.draw_hubs(self._map))
-
-    # async def blah(self) -> None:
-    #     if self._map:
-    #         start = self._map.start
-    #         if start:
-    #             self.notify(f"here: {start.next_nodes}")
-    #         else:
-    #             self.notify("NO START !!!!!!!")
-
-    #         for hub in self._map.loop():
-    #             self.notify(f"hub: {hub.point}")
-    #             self._canvas.draw_circle(
-    #                 hub.point.col * 20 + 5, hub.point.row * 20 + 5, 2
-    #             )
-    #             await asyncio.sleep(0.3)

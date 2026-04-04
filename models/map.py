@@ -16,13 +16,15 @@ class Map:
 
     # ########################################################################
     # ############################################################## HUBS ####
-
     def get_connections(self) -> Iterator[Tuple[Hub, Hub]]:
         for hub in self._hubs:
             for nxt in hub.next_nodes:
                 yield (hub, nxt)
 
-    def loop(self, current: Hub | None = None):
+    # ################################################ TEST ##################
+    # ################################################ TEST ##################
+    # ################################################ TEST ##################
+    def loop(self, current: Hub | None = None) -> Iterator[Hub]:
         if not current:
             current = self.start
 

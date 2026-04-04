@@ -102,7 +102,7 @@ class FileParser:
                     self._path, f"Line '{line[:10]}' is an invalid connection."
                 )
 
-            # TODO: MANAGE OPTIONS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # TODO: MANAGE OPTIONS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             hub_from, hub_to = connection.split("-", maxsplit=1)
 
             if len(hub_from) < 3 or len(hub_to) < 3:
