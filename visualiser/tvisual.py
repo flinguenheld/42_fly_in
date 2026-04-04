@@ -57,7 +57,7 @@ class TVisual(App):
 
         if file_path:
             try:
-                self._parser.up_file(file_path)
+                self._parser.new_file(file_path)
                 self._parser.parse_file()
                 self._map = self._parser.map
                 if self._map:

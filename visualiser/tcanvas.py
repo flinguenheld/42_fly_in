@@ -18,9 +18,8 @@ class TCanvas(Canvas):
 
     def __init__(self, map: Map) -> None:
 
-        self._map = map
-        self._set_shift()
-        rows, cols = self._set_size()
+        self._set_shift(map)
+        rows, cols = self._set_size(map)
 
         super().__init__(
             cols * TCanvas._SCALE + TCanvas._PADDING,
@@ -29,16 +28,16 @@ class TCanvas(Canvas):
 
     # ########################################################################
     # ########################################################## GET SIZE ####
-    def _set_size(self) -> Tuple[int, int]:
+    def _set_size(self, map: Map) -> Tuple[int, int]:
         """
         Save the map and return the required size of the canvas
         """
 
-        max_row: Hub = max(self._map.hubs, key=lambda h: h.point.row)
-        min_row: Hub = min(self._map.hubs, key=lambda h: h.point.row)
+        max_row: Hub = max(map.hubs, key=lambda h: h.point.row)
+        min_row: Hub = min(map.hubs, key=lambda h: h.point.row)
 
-        max_col: Hub = max(self._map.hubs, key=lambda h: h.point.col)
-        min_col: Hub = min(self._map.hubs, key=lambda h: h.point.col)
+        max_col: Hub = max(map.hubs, key=lambda h: h.point.col)
+        min_col: Hub = min(map.hubs, key=lambda h: h.point.col)
 
         if max_row and min_row and max_col and min_col:
             rows = max_row.point.row - min_row.point.row
@@ -49,10 +48,10 @@ class TCanvas(Canvas):
 
     # ########################################################################
     # ######################################################### SET SHIFT ####
-    def _set_shift(self) -> None:
-        if self._map.hubs:
-            min_row: Hub = min(self._map.hubs, key=lambda h: h.point.row)
-            min_col: Hub = min(self._map.hubs, key=lambda h: h.point.col)
+    def _set_shift(self, map: Map) -> None:
+        if map.hubs:
+            min_row: Hub = min(map.hubs, key=lambda h: h.point.row)
+            min_col: Hub = min(map.hubs, key=lambda h: h.point.col)
 
             if min_row and min_col:
                 row: int = min_row.point.row * self._SCALE

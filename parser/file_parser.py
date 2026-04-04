@@ -15,7 +15,9 @@ class FileParser:
         self._path: Optional[str] = None
         self._new_map = Map()
 
-    def up_file(self, path: str) -> None:
+    # ########################################################################
+    # ########################################################## NEW FILE ####
+    def new_file(self, path: str) -> None:
         if not os.path.isfile(path):
             raise ErrorFile(path, "Does not exist.")
 
@@ -31,6 +33,8 @@ class FileParser:
             return self._new_map
         return None
 
+    # ########################################################################
+    # ######################################################## PARSE FILE ####
     def parse_file(self) -> None:
         if self._path:
             try:
@@ -44,11 +48,11 @@ class FileParser:
                     if not lines:
                         raise ErrorFile(self._path, "Empty.")
 
-                    self._get_nb_drones(lines[0])
-                    self._get_hubs(
+                    self._parse_nb_drones(lines[0])
+                    self._parse_hubs(
                         ln for ln in lines if "hub" in ln.split()[0]
                     )
-                    self._get_connections(
+                    self._parse_connections(
                         ln for ln in lines if ln.startswith("connection: ")
                     )
 
@@ -57,7 +61,7 @@ class FileParser:
 
     # ########################################################################
     # ######################################################### NB DRONES ####
-    def _get_nb_drones(self, first_line: str) -> None:
+    def _parse_nb_drones(self, first_line: str) -> None:
         if not first_line.startswith("nb_drones: "):
             raise ErrorFile(self._path, "Does not start with 'nb_drones: '.")
 
@@ -71,7 +75,7 @@ class FileParser:
 
     # ########################################################################
     # ############################################################## HUBS ####
-    def _get_hubs(self, lines: Iterator[str]) -> None:
+    def _parse_hubs(self, lines: Iterator[str]) -> None:
         for line in lines:
             try:
                 line = line.strip()
@@ -87,7 +91,7 @@ class FileParser:
 
     # ########################################################################
     # ####################################################### CONNECTIONS ####
-    def _get_connections(self, lines: Iterator[str]) -> None:
+    def _parse_connections(self, lines: Iterator[str]) -> None:
         for line in lines:
             line = line.strip()
             header, connection = line.split(maxsplit=1)

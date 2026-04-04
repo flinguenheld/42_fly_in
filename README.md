@@ -3,6 +3,9 @@
 ## 42 fly in
 Drones are interesting.
 
+<div align="center">
+    <img src="./images/fly_in_classes.excalidraw.png">
+</div>
 
 ### Description
 ### Instructions

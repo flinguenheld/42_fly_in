@@ -15,7 +15,8 @@ class Map:
         self._hubs: List[Hub] = []
 
     # ########################################################################
-    # ############################################################## HUBS ####
+    # ################################################### GET CONNECTIONS ####
+
     def get_connections(self) -> Iterator[Tuple[Hub, Hub]]:
         for hub in self._hubs:
             for nxt in hub.next_nodes:
@@ -44,6 +45,8 @@ class Map:
     def end(self) -> Hub | None:
         return next(h for h in self._hubs if h.type == Hub.Type.END)
 
+    # ########################################################################
+    # ############################################################## HUBS ####
     @property
     def hubs(self) -> List[Hub]:
         return self._hubs
