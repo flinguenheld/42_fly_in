@@ -82,6 +82,6 @@ class TVisual(App):
 
     # ########################################################################
     # ########################################################### THEMES #####
-    def action_next_theme(self):
+    def action_next_theme(self) -> None:
         self._theme.next(self.app)
         self._tmap.up_colours()

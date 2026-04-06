@@ -18,12 +18,12 @@ class Theme:
     surface = Color.parse("green")
     panel = Color.parse("green")
 
-    def __init__(self, app: App):
+    def __init__(self, app: App) -> None:
         self.next(app)
 
     # ########################################################################
     # ############################################################## NEXT ####
-    def next(self, app: App):
+    def next(self, app: App) -> None:
         match app.theme[-5:]:
             case "uvbox":
                 app.theme = "catppuccin-latte"
@@ -41,7 +41,7 @@ class Theme:
     # ########################################################################
     # ######################################################## UP COLOURS ####
     @classmethod
-    def up_colours(cls, app: App):
+    def up_colours(cls, app: App) -> None:
         theme = app.get_theme(app.theme)
         if theme:
             cls.primary = Color.parse(theme.primary)

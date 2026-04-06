@@ -21,18 +21,29 @@ class TMap(Widget):
         self._layout = ScrollableContainer(classes="tmap_layout")
 
         self._blah_position = 2
-        self._drones = [TDrone()]
+        self._drones = [
+            TDrone(),
+            TDrone(),
+            TDrone(),
+            TDrone(),
+            TDrone(),
+            TDrone(),
+        ]
+
+        for i, d in enumerate(self._drones):
+            d.styles.offset = (3, (i + 2) * 4)
 
     # ########################################################################
     # ######################################################## UP COLOURS ####
-    def up_colours(self):
+    def up_colours(self) -> None:
         for d in self._drones:
             d.up_colours()
 
-    def move_baby(self):
+    def move_baby(self) -> None:
         self._blah_position += 1
         # self._test_overlay.styles.offset = (self._blah_position, 6)
-        self._drones[0].styles.offset = (self._blah_position, 3)
+        for i, d in enumerate(self._drones):
+            d.styles.offset = (self._blah_position, d.offset[1])
 
     # ########################################################################
     # ########################################################### COMPOSE ####

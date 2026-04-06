@@ -58,7 +58,7 @@ Canvas {
 
 TDrone {
 	position: absolute;
-	# border: round green;
+	border: round green;
 }
 
 TDrone2 {
