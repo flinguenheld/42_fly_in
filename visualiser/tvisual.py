@@ -7,6 +7,7 @@ from textual.app import App, ComposeResult
 from models.map import Map
 from parser.file_parser import FileParser
 from visualiser.tmap import TMap
+from visualiser.theme import Theme
 from visualiser.tfile import TFile
 from visualiser.ttitle import TTitleMain
 from visualiser.tmessage import TMessageError, TMessageSuccess
@@ -18,7 +19,12 @@ from visualiser.tmessage import TMessageError, TMessageSuccess
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀░░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀
 class TVisual(App):
     CSS_PATH = ["styles/main.tcss", "styles/file.tcss", "styles/message.tcss"]
-    BINDINGS = [("t", "test", "test baby"), ("d", "draw", "draw")]
+    BINDINGS = [
+        ("f", "file_selection", "File selection"),
+        ("t", "next_theme", "Next theme"),
+        ("d", "draw", "draw"),
+        ("m", "move", "move offset"),
+    ]
 
     def __init__(self) -> None:
         super().__init__()
@@ -27,6 +33,7 @@ class TVisual(App):
         self._title = TTitleMain()
         self._parser = FileParser()
         self._map: Map | None = None
+        self._theme = Theme(self.app)
 
     # ########################################################################
     # ########################################################### COMPOSE ####
@@ -40,17 +47,18 @@ class TVisual(App):
     # ########################################################################
     # ############################################################# MOUNT ####
     def on_mount(self) -> None:
-        # self.theme = "gruvbox"
-        self.theme = "catppuccin-latte"
-
-        self.action_test()
+        self._theme.next(self.app)
+        self.action_file_selection()
 
     # ################################################ TESTS #################
     # ################################################ TESTS #################
+    def action_move(self) -> None:
+        self._tmap.move_baby()
+
     # ################################################ TESTS #################
     # ################################################ TESTS #################
     @work
-    async def action_test(self) -> None:
+    async def action_file_selection(self) -> None:
         self._map = None
         file_path: str = await self.push_screen_wait(TFile())
         # file_path = "./maps/hello.txt"
@@ -71,3 +79,9 @@ class TVisual(App):
     async def action_draw(self) -> None:
         if self._map:
             asyncio.create_task(self._tmap.draw_hubs(self._map))
+
+    # ########################################################################
+    # ########################################################### THEMES #####
+    def action_next_theme(self):
+        self._theme.next(self.app)
+        self._tmap.up_colours()

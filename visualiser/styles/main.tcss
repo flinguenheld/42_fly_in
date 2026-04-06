@@ -46,3 +46,29 @@ Canvas {
 .layout_canvas {
 	align: center middle;
 }
+
+#test_overlay {
+	position: absolute;
+	border: round red;
+	# top: 5;
+	# left: 5;
+	# offset: 20 6;
+	# z-index: 10;
+}
+
+TDrone {
+	position: absolute;
+	# border: round green;
+}
+
+TDrone2 {
+	position: absolute;
+	width: auto;
+	height: auto;
+
+	margin: 0;
+	padding: 0;
+
+	background: transparent;
+	# border: round green;
+}

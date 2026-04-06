@@ -1,3 +1,5 @@
+from visualiser.tdrone import TDrone
+from textual.widgets import Label
 import asyncio
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer
@@ -15,12 +17,29 @@ class TMap(Widget):
     def __init__(self) -> None:
         super().__init__()
         self._canvas: TCanvas | None = None
+        self._test_overlay: Label = Label("hello", id="test_overlay")
         self._layout = ScrollableContainer(classes="tmap_layout")
+
+        self._blah_position = 2
+        self._drones = [TDrone()]
+
+    # ########################################################################
+    # ######################################################## UP COLOURS ####
+    def up_colours(self):
+        for d in self._drones:
+            d.up_colours()
+
+    def move_baby(self):
+        self._blah_position += 1
+        # self._test_overlay.styles.offset = (self._blah_position, 6)
+        self._drones[0].styles.offset = (self._blah_position, 3)
 
     # ########################################################################
     # ########################################################### COMPOSE ####
     def compose(self) -> ComposeResult:
         yield self._layout
+        for drone in self._drones:
+            yield drone
 
     # ########################################################################
     # ###################################################### RESET CANVAS ####
@@ -35,6 +54,7 @@ class TMap(Widget):
 
         self._canvas = TCanvas(map)
         self._layout.mount(self._canvas)
+        self._layout.mount(self._test_overlay)
 
     # ########################################################################
     # ######################################################### DRAW HUBS ####
