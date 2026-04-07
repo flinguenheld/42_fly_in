@@ -1,3 +1,5 @@
+from typing import override
+from visualiser.animation import Anim
 import time
 import random
 import asyncio
@@ -20,7 +22,8 @@ class _Coordinate:
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░█▀▄░█▀▄░█▀█░█▀█░█▀▀
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░█░█░█▀▄░█░█░█░█░█▀▀
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀▀░░▀░▀░▀▀▀░▀░▀░▀▀▀
-class TDrone(Canvas):
+class TDrone(Canvas, Anim):
+    animation_status: bool = True
     _points = [
         _Coordinate(Point(2, 0), Point(0, 2), ""),
         _Coordinate(Point(1, 0), Point(1, 2), "babord"),
@@ -34,39 +37,45 @@ class TDrone(Canvas):
     ]
 
     def __init__(self) -> None:
-        super().__init__(3, 4)
+        Canvas.__init__(self, 3, 4)
+        Anim.__init__(self)
         self.up_colours()
 
         self._blink_time = time.time()
         self._blink_on = True
         self._speed = 0.1
 
-    def on_mount(self) -> None:
-        asyncio.create_task(self._turn())
-
     # ########################################################################
     # ############################################################## TURN ####
-    async def _turn(self) -> None:
+    @override
+    async def _anim_run(self) -> None:
 
-        while True:
-            for prev, cur in pairwise(TDrone._points):
-                self.clear_pixel(prev.left.x, prev.left.y)
-                self.clear_pixel(prev.right.x, prev.right.y)
+        try:
+            while True:
+                for prev, cur in pairwise(TDrone._points):
+                    self.clear_pixel(prev.left.x, prev.left.y)
+                    self.clear_pixel(prev.right.x, prev.right.y)
 
-                if self._blink_on:
-                    if cur.light == "babord":
-                        self.set_pixel(cur.left.x, cur.left.y, Theme.error)
-                    elif cur.light == "tribord":
-                        self.set_pixel(cur.left.x, cur.left.y, Theme.success)
+                    if self._blink_on:
+                        if cur.light == "babord":
+                            self.set_pixel(cur.left.x, cur.left.y, Theme.error)
+                        elif cur.light == "tribord":
+                            self.set_pixel(
+                                cur.left.x, cur.left.y, Theme.success
+                            )
+                        else:
+                            self.set_pixel(
+                                cur.left.x, cur.left.y, Theme.primary
+                            )
                     else:
                         self.set_pixel(cur.left.x, cur.left.y, Theme.primary)
-                else:
-                    self.set_pixel(cur.left.x, cur.left.y, Theme.primary)
 
-                self.set_pixel(cur.right.x, cur.right.y, Theme.primary)
-                await asyncio.sleep(self._speed)
+                    self.set_pixel(cur.right.x, cur.right.y, Theme.primary)
+                    await asyncio.sleep(self._speed)
 
-            self._up_light_and_speed()
+                self._up_light_and_speed()
+        except asyncio.CancelledError:
+            pass
 
     # ########################################################################
     # ################################################## UP LIGHT & SPEED ####

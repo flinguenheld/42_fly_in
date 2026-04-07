@@ -1,3 +1,5 @@
+from typing import override
+from visualiser.animation import Anim
 from visualiser.tdrone import TDrone
 from textual.widgets import Label
 import asyncio
@@ -13,9 +15,11 @@ from visualiser.tcanvas import TCanvas
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░█▄█░█▀█░█▀█
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░█░█░█▀█░█▀▀
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀░▀░▀░▀░▀░░
-class TMap(Widget):
+class TMap(Widget, Anim):
     def __init__(self) -> None:
-        super().__init__()
+        Widget.__init__(self)
+        Anim.__init__(self)
+
         self._canvas: TCanvas | None = None
         self._test_overlay: Label = Label("hello", id="test_overlay")
         self._layout = ScrollableContainer(classes="tmap_layout")
@@ -79,3 +83,15 @@ class TMap(Widget):
                 await asyncio.sleep(0.02)
                 self._canvas.draw_adapted_line(hub_from.point, hub_to.point)
                 await asyncio.sleep(0.01)
+
+    # ########################################################################
+    # ######################################################## ANIMATIONS ####
+    @override
+    def anim_on(self) -> None:
+        for drone in self._drones:
+            drone.anim_on()
+
+    @override
+    def anim_off(self) -> None:
+        for drone in self._drones:
+            drone.anim_off()

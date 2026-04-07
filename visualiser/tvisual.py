@@ -1,3 +1,4 @@
+from visualiser.animation import Anim
 import asyncio
 from textual import work
 from textual.containers import Vertical
@@ -48,7 +49,7 @@ class TVisual(App):
     # ############################################################# MOUNT ####
     def on_mount(self) -> None:
         self._theme.next(self.app)
-        self.action_file_selection()
+        # self.action_file_selection()
 
     # ################################################ TESTS #################
     # ################################################ TESTS #################
@@ -58,6 +59,7 @@ class TVisual(App):
     # ################################################ TESTS #################
     # ################################################ TESTS #################
     @work
+    @Anim.toggle_anim(["_tmap"])
     async def action_file_selection(self) -> None:
         self._map = None
         file_path: str = await self.push_screen_wait(TFile())
