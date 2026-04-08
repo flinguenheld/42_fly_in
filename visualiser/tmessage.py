@@ -12,10 +12,10 @@ from visualiser.ttitle import TTitle, TTitleError, TTitleSuccess
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀░▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀▀▀
 class TMessage(ModalScreen):
     BINDINGS = [
-        ("escape", "app.pop_screen", "Pop screen"),
-        ("enter", "app.pop_screen", "Pop screen"),
-        ("space", "app.pop_screen", "Pop screen"),
-        ("q", "app.pop_screen", "Pop screen"),
+        ("escape", "cancel", "Cancel"),
+        ("enter", "cancel", "Cancel"),
+        ("space", "cancel", "Cancel"),
+        ("q", "cancel", "Cancel"),
     ]
 
     def __init__(
@@ -47,10 +47,15 @@ class TMessage(ModalScreen):
                 yield self._bt_close
 
     # ########################################################################
+    # ############################################################ CANCEL ####
+    def action_cancel(self) -> None:
+        self.dismiss(None)
+
+    # ########################################################################
     # ################################################### BUTTON PRESSED #####
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button == self._bt_close:
-            self.app.pop_screen()
+            self.action_cancel()
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░

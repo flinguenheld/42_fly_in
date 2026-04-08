@@ -7,6 +7,13 @@ from typing import Callable, Any, Iterator
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀█░█░█░░█░░█░█
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░▀░▀░▀░▀▀▀░▀░▀
 class Anim:
+    """
+    Mother to manage async animations.
+    Override the _anim_run() method which will be start / stop on mount.
+    Use the toggle_anim decorator to stop/restart all attributes which are
+    Anim children.
+    """
+
     def __init__(self) -> None:
         self._animation: asyncio.Task[None] | None = None
 

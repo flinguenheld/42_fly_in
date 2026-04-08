@@ -73,10 +73,12 @@ class TVisual(App):
                 if self._map:
                     self._tmap.new_canvas(self._map)
 
-                self.push_screen(TMessageSuccess(str(self._parser)))
+                # self.push_screen(TMessageSuccess(str(self._parser)))
+                await self.push_screen_wait(TMessageSuccess(str(self._parser)))
 
             except Exception as e:
-                self.push_screen(TMessageError(str(e)))
+                # self.push_screen(TMessageError(str(e)))
+                await self.push_screen_wait(TMessageError(str(e)))
 
     async def action_draw(self) -> None:
         if self._map:

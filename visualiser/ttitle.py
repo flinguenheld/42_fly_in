@@ -1,6 +1,7 @@
 import random
 import asyncio
 from typing import override
+from visualiser.animation import Anim
 
 from textual.widgets import Static
 from textual.app import RenderResult
@@ -11,11 +12,12 @@ from textual.reactive import reactive
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░▀█▀░▀█▀░▀█▀░█░░░█▀▀
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░░█░░░█░░░█░░█░░░█▀▀
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀░░▀▀▀░░▀░░▀▀▀░▀▀▀
-class TTitle(Static):
+class TTitle(Static, Anim):
     _current = reactive(0)
 
     def __init__(self, classes: str = "") -> None:
-        super().__init__(classes=classes)
+        Static.__init__(self, classes=classes)
+        Anim.__init__(self)
         self._titles = ["Abcde", "aBcde", "abCde", "abcDe", "abcdE"]
 
     def render(self) -> RenderResult:
@@ -23,7 +25,8 @@ class TTitle(Static):
 
     # ########################################################################
     # ######################################################## ANIMATION #####
-    async def _run_animation(self) -> None:
+    @override
+    async def _anim_run(self) -> None:
         while True:
             for index in range(0, len(self._titles)):
                 self._current = index
@@ -35,11 +38,6 @@ class TTitle(Static):
 
             self._current = 0
             await asyncio.sleep(random.randint(2, 10))
-
-    # ########################################################################
-    # ############################################################ MOUNT #####
-    async def on_mount(self) -> None:
-        asyncio.create_task(self._run_animation())
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -79,7 +77,7 @@ class TTitleMain(TTitle):
                 self._current = i
 
     @override
-    async def _run_animation(self) -> None:
+    async def _anim_run(self) -> None:
         while True:
             for speed in range(20, 3, -1):
                 await self._fly(speed / 100, 1)
