@@ -1,53 +1,70 @@
-from typing import Callable, List
 import asyncio
+from typing import Callable, Any, Iterator
 
 
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀█░█▀█░▀█▀░█▄█
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀█░█░█░░█░░█░█
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░▀░▀░▀░▀▀▀░▀░▀
 class Anim:
-    def __init__(self):
-        self._animation = None
+    def __init__(self) -> None:
+        self._animation: asyncio.Task[None] | None = None
 
     async def _anim_run(self) -> None:
         pass
 
-    def anim_on(self) -> None:
+    # ########################################################################
+    # ##################################################### ANIM ON / OFF ####
+    async def anim_on(self) -> None:
         if self._animation is None:
             self._animation = asyncio.create_task(self._anim_run())
 
-    def anim_off(self) -> None:
+    async def anim_off(self) -> None:
         if self._animation is not None:
             self._animation.cancel()
-            self._animation = None
+            try:
+                await self._animation
+            except asyncio.CancelledError:
+                pass
+            finally:
+                self._animation = None
 
-    def on_mount(self) -> None:
-        self.anim_on()
+    # ########################################################################
+    # ################################################### MOUNT / UNMOUNT ####
+    async def on_mount(self) -> None:
+        await self.anim_on()
 
-    def on_unmount(self) -> None:
-        self.anim_off()
+    async def on_unmount(self) -> None:
+        await self.anim_off()
 
-    # TODO: DECORATOR ??????????????????????????????????????????????
-    # TODO: DECORATOR ??????????????????????????????????????????????
-    # TODO: DECORATOR ??????????????????????????????????????????????
-    # TODO: DECORATOR ??????????????????????????????????????????????
-    # TODO: DECORATOR ??????????????????????????????????????????????
-    # TODO: DECORATOR ??????????????????????????????????????????????
-
+    # ########################################################################
+    # ############################################# TOGGLE ANIM DECORATOR ####
     @staticmethod
-    def toggle_anim(who: List[str]):
-        def deco(func: Callable):
-            async def wrapper(*args, **kwargs):
+    def toggle_anim(func: Callable) -> Any:
+        """
+        Get all attributes which have the 'anim_off' 'anim_on' methods.
+        Then toggle animations while the decorated function is running.
+        """
 
-                for to_toggle in who:
-                    tt = args[0].__getattribute__(to_toggle)
-                    tt.anim_off()
+        def __attributes_with(instance: Any, which_method: str) -> Iterator:
+            return filter(
+                lambda a: hasattr(a, which_method),
+                (
+                    instance.__getattribute__(attr)
+                    for attr in instance.__dict__.keys()
+                ),
+            )
 
-                val = await func(*args, **kwargs)
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
 
-                for to_toggle in who:
-                    tt = args[0].__getattribute__(to_toggle)
-                    tt.anim_on()
+            for a in __attributes_with(args[0], "anim_off"):
+                await a.anim_off()
 
-                return val
+            val = await func(*args, **kwargs)
 
-            return wrapper
+            for a in __attributes_with(args[0], "anim_on"):
+                await a.anim_on()
 
-        return deco
+            return val
+
+        return wrapper

@@ -59,7 +59,7 @@ class TVisual(App):
     # ################################################ TESTS #################
     # ################################################ TESTS #################
     @work
-    @Anim.toggle_anim(["_tmap"])
+    @Anim.toggle_anim
     async def action_file_selection(self) -> None:
         self._map = None
         file_path: str = await self.push_screen_wait(TFile())

@@ -1,13 +1,14 @@
-from typing import override
-from visualiser.animation import Anim
-from visualiser.tdrone import TDrone
-from textual.widgets import Label
 import asyncio
+from typing import override
+
+from textual.widget import Widget
+from textual.widgets import Label
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer
 
 from models.map import Map
-from textual.widget import Widget
+from visualiser.tdrone import TDrone
+from visualiser.animation import Anim
 from visualiser.tcanvas import TCanvas
 
 
@@ -87,11 +88,11 @@ class TMap(Widget, Anim):
     # ########################################################################
     # ######################################################## ANIMATIONS ####
     @override
-    def anim_on(self) -> None:
+    async def anim_on(self) -> None:
         for drone in self._drones:
-            drone.anim_on()
+            await drone.anim_on()
 
     @override
-    def anim_off(self) -> None:
+    async def anim_off(self) -> None:
         for drone in self._drones:
-            drone.anim_off()
+            await drone.anim_off()
