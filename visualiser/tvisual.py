@@ -1,15 +1,17 @@
-from visualiser.animation import Anim
+from textual.scrollbar import ScrollBar
 import asyncio
 from textual import work
-from textual.containers import Vertical
+from textual.containers import Vertical, ScrollableContainer
 from textual.widgets import Header, Footer
 from textual.app import App, ComposeResult
 
 from models.map import Map
 from parser.file_parser import FileParser
-from visualiser.tmap import TMap
+
 from visualiser.theme import Theme
 from visualiser.tfile import TFile
+from visualiser.map.tmap import TMap
+from visualiser.animation import Anim
 from visualiser.ttitle import TTitleMain
 from visualiser.tmessage import TMessageError, TMessageSuccess
 
@@ -19,7 +21,12 @@ from visualiser.tmessage import TMessageError, TMessageSuccess
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░▀▄▀░░█░░▀▀█░█░█░█▀█░█░░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀░░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀
 class TVisual(App):
-    CSS_PATH = ["styles/main.tcss", "styles/file.tcss", "styles/message.tcss"]
+    CSS_PATH = [
+        "styles/main.tcss",
+        "styles/map.tcss",
+        "styles/file.tcss",
+        "styles/message.tcss",
+    ]
     BINDINGS = [
         ("f", "file_selection", "File selection"),
         ("t", "next_theme", "Next theme"),
@@ -42,14 +49,15 @@ class TVisual(App):
         yield Header(show_clock=True)
         with Vertical():
             yield self._title
-            yield self._tmap
+            with ScrollableContainer():
+                yield self._tmap
         yield Footer()
 
     # ########################################################################
     # ############################################################# MOUNT ####
     def on_mount(self) -> None:
         self._theme.next(self.app)
-        # self.action_file_selection()
+        self.action_file_selection()
 
     # ################################################ TESTS #################
     # ################################################ TESTS #################

@@ -1,3 +1,4 @@
+from visualiser.map.thub import THub
 import asyncio
 from typing import override
 
@@ -7,15 +8,23 @@ from textual.app import ComposeResult
 from textual.containers import ScrollableContainer
 
 from models.map import Map
-from visualiser.tdrone import TDrone
 from visualiser.animation import Anim
 from visualiser.tcanvas import TCanvas
+from visualiser.map.tdrone import TDrone
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░█▄█░█▀█░█▀█
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░█░█░█▀█░█▀▀
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀░▀░▀░▀░▀░░
+
+
+# TODO: CREATE A TMAP FROM A MAP
+# TODO: DELETE THE CURRENT AN CREATE A BRAND NEW ONE ON EACH NEW FILE
+# TODO: MANAGE THE SIZE IN THE CONSTRUCTOR
+# TODO: SET THE SCALE (NEEDED ?) IN POINT !!!!
+
+
 class TMap(Widget, Anim):
     def __init__(self) -> None:
         Widget.__init__(self)
@@ -35,8 +44,17 @@ class TMap(Widget, Anim):
             TDrone(),
         ]
 
+        self._hubs = [
+            THub(),
+            THub(),
+            THub(),
+        ]
+
         for i, d in enumerate(self._drones):
             d.styles.offset = (3, (i + 2) * 4)
+
+        for i, h in enumerate(self._hubs):
+            h.styles.offset = (20, (i + 2) * 5)
 
     # ########################################################################
     # ######################################################## UP COLOURS ####
@@ -54,6 +72,10 @@ class TMap(Widget, Anim):
     # ########################################################### COMPOSE ####
     def compose(self) -> ComposeResult:
         yield self._layout
+
+        for hub in self._hubs:
+            yield hub
+
         for drone in self._drones:
             yield drone
 
