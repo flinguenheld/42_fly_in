@@ -1,4 +1,3 @@
-from textual.scrollbar import ScrollBar
 import asyncio
 from textual import work
 from textual.containers import Vertical, ScrollableContainer
@@ -36,12 +35,25 @@ class TVisual(App):
 
     def __init__(self) -> None:
         super().__init__()
-        # self._canvas = TCanvas()
-        self._tmap = TMap()
+
         self._title = TTitleMain()
         self._parser = FileParser()
+
         self._map: Map | None = None
+        self._tmap: TMap | None = None
         self._theme = Theme(self.app)
+
+        self._layout_map = ScrollableContainer(classes="tmap_layout")
+
+    # ########################################################################
+    # ########################################################### NEW MAP ####
+    def new_map(self, map: Map):
+        if self._tmap:
+            self._tmap.remove()
+
+        self._map = map
+        self._tmap = TMap(self._map)
+        self._layout_map.mount(self._tmap)
 
     # ########################################################################
     # ########################################################### COMPOSE ####
@@ -49,8 +61,7 @@ class TVisual(App):
         yield Header(show_clock=True)
         with Vertical():
             yield self._title
-            with ScrollableContainer():
-                yield self._tmap
+            yield self._layout_map
         yield Footer()
 
     # ########################################################################
@@ -62,7 +73,8 @@ class TVisual(App):
     # ################################################ TESTS #################
     # ################################################ TESTS #################
     def action_move(self) -> None:
-        self._tmap.move_baby()
+        if self._tmap:
+            self._tmap.move_baby()
 
     # ################################################ TESTS #################
     # ################################################ TESTS #################
@@ -77,9 +89,9 @@ class TVisual(App):
             try:
                 self._parser.new_file(file_path)
                 self._parser.parse_file()
-                self._map = self._parser.map
-                if self._map:
-                    self._tmap.new_canvas(self._map)
+                map = self._parser.map
+                if map:
+                    self.new_map(map)
 
                 # self.push_screen(TMessageSuccess(str(self._parser)))
                 await self.push_screen_wait(TMessageSuccess(str(self._parser)))
@@ -89,11 +101,12 @@ class TVisual(App):
                 await self.push_screen_wait(TMessageError(str(e)))
 
     async def action_draw(self) -> None:
-        if self._map:
-            asyncio.create_task(self._tmap.draw_hubs(self._map))
+        if self._tmap:
+            asyncio.create_task(self._tmap.draw_hubs())
 
     # ########################################################################
     # ########################################################### THEMES #####
     def action_next_theme(self) -> None:
         self._theme.next(self.app)
-        self._tmap.up_colours()
+        if self._tmap:
+            self._tmap.up_colours()

@@ -1,11 +1,11 @@
+from point import Point
+from models.hub import Hub
 from visualiser.map.thub import THub
 import asyncio
-from typing import override
+from typing import override, Tuple
 
 from textual.widget import Widget
-from textual.widgets import Label
 from textual.app import ComposeResult
-from textual.containers import ScrollableContainer
 
 from models.map import Map
 from visualiser.animation import Anim
@@ -17,37 +17,41 @@ from visualiser.map.tdrone import TDrone
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░█▄█░█▀█░█▀█
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░█░█░█▀█░█▀▀
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀░▀░▀░▀░▀░░
-
-
-# TODO: CREATE A TMAP FROM A MAP
-# TODO: DELETE THE CURRENT AN CREATE A BRAND NEW ONE ON EACH NEW FILE
-# TODO: MANAGE THE SIZE IN THE CONSTRUCTOR
-# TODO: SET THE SCALE (NEEDED ?) IN POINT !!!!
-
-
 class TMap(Widget, Anim):
-    def __init__(self) -> None:
+    def __init__(self, map: Map) -> None:
         Widget.__init__(self)
         Anim.__init__(self)
 
-        self._canvas: TCanvas | None = None
-        self._test_overlay: Label = Label("hello", id="test_overlay")
-        self._layout = ScrollableContainer(classes="tmap_layout")
+        self._map = map
+
+        # Size ?
+        # TODO: embelish that
+        height, width = self._get_visual_size()
+        self._get_visual_shift()
+
+        width = (
+            width * Point.VISUAL_SCALE if width > 0 else Point.VISUAL_SCALE
+        ) + Point.VISUAL_PADDING * 2
+        height = (
+            height * Point.VISUAL_SCALE if height > 0 else Point.VISUAL_SCALE
+        ) + Point.VISUAL_PADDING * 2
+
+        self._canvas = TCanvas(width, height)
 
         self._blah_position = 2
         self._drones = [
-            TDrone(),
-            TDrone(),
-            TDrone(),
-            TDrone(),
-            TDrone(),
-            TDrone(),
+            # TDrone(),
+            # TDrone(),
+            # TDrone(),
+            # TDrone(),
+            # TDrone(),
+            # TDrone(),
         ]
 
         self._hubs = [
-            THub(),
-            THub(),
-            THub(),
+            # THub(),
+            # THub(),
+            # THub(),
         ]
 
         for i, d in enumerate(self._drones):
@@ -55,6 +59,54 @@ class TMap(Widget, Anim):
 
         for i, h in enumerate(self._hubs):
             h.styles.offset = (20, (i + 2) * 5)
+
+        self._canvas.draw_line(5, 5, 10, 10)
+
+    # ########################################################################
+    # ########################################################## GET SIZE ####
+    def _get_visual_size(self) -> Tuple[int, int]:
+        """
+        Get the required size of the canvas.
+        """
+
+        max_row: Hub = max(self._map.hubs, key=lambda h: h.point.row)
+        min_row: Hub = min(self._map.hubs, key=lambda h: h.point.row)
+
+        max_col: Hub = max(self._map.hubs, key=lambda h: h.point.col)
+        min_col: Hub = min(self._map.hubs, key=lambda h: h.point.col)
+
+        if max_row and min_row and max_col and min_col:
+            rows = max_row.point.row - min_row.point.row
+            cols = max_col.point.col - min_col.point.col
+            return (rows, cols)
+
+        return (0, 0)
+
+    # ########################################################################
+    # ######################################################### GET SHIFT ####
+    def _get_visual_shift(self) -> None:
+        """
+        Compute a 'shift' value to move the graph at the top left.
+        """
+        if self._map.hubs:
+            min_row: Hub = min(self._map.hubs, key=lambda h: h.point.row)
+            min_col: Hub = min(self._map.hubs, key=lambda h: h.point.col)
+
+            if min_row and min_col:
+                row: int = min_row.point.row * Point.VISUAL_SCALE
+                col: int = min_col.point.col * Point.VISUAL_SCALE
+
+                shift_row = abs(row) if row < 0 else -row
+                shift_col = abs(col) if col < 0 else -col
+
+                # TODO: adapt padding -----------------------------
+                self._shift = Point(
+                    shift_row + Point.VISUAL_PADDING,
+                    shift_col + Point.VISUAL_PADDING,
+                )
+
+                self.notify(f"shift set: {Point(shift_row, shift_col)}")
+                Point.set_visual_shift(Point(shift_row, shift_col))
 
     # ########################################################################
     # ######################################################## UP COLOURS ####
@@ -71,7 +123,9 @@ class TMap(Widget, Anim):
     # ########################################################################
     # ########################################################### COMPOSE ####
     def compose(self) -> ComposeResult:
-        yield self._layout
+
+        # with VerticalGroup():
+        yield self._canvas
 
         for hub in self._hubs:
             yield hub
@@ -80,26 +134,13 @@ class TMap(Widget, Anim):
             yield drone
 
     # ########################################################################
-    # ###################################################### RESET CANVAS ####
-    def new_canvas(self, map: Map) -> None:
-        """
-        Delete the current canvas to create and mount a brand new one
-        (mandatory to change the area size and adapt the position)
-        """
-        if self._canvas:
-            self._canvas.clear()
-            self._canvas.remove()
-
-        self._canvas = TCanvas(map)
-        self._layout.mount(self._canvas)
-        self._layout.mount(self._test_overlay)
-
-    # ########################################################################
     # ######################################################### DRAW HUBS ####
-    async def draw_hubs(self, map: Map) -> None:
+    async def draw_hubs(self) -> None:
 
         if self._canvas:
-            for hub_from, hub_to in map.get_connections():
+            for hub_from, hub_to in self._map.get_connections():
+                self.notify(f"draw that point: {hub_from.point}")
+                self.notify(f"draw that adapted: {hub_from.point.visual}")
                 self._canvas.draw_adapted_circle(hub_from.point)
                 await asyncio.sleep(0.02)
                 self._canvas.draw_adapted_circle(hub_to.point)

@@ -1,14 +1,12 @@
 # ############################################################
 # ########################################## MAP / CANVAS ####
 TMap {
-	width: 100%;
-	height: 94%;
-	content-align: center middle;
-	border: round $panel;
-}
+	width: auto;
+	height: auto;
 
-.tmap_layout {
-	# border: round orange;
+	content-align: center middle;
+	border: round red;
+	padding: 1;
 }
 
 Canvas {
@@ -17,10 +15,11 @@ Canvas {
 
 	margin: 1;
 	background: $background;
-	# border: round $panel;
+	border: round red;
 }
 
-.layout_canvas {
+.tmap_layout {
+	border: round orange;
 	align: center middle;
 }
 

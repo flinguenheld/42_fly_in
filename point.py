@@ -1,8 +1,7 @@
 from __future__ import annotations
 from math import sqrt
-from typing import Tuple, Any
-
 from error import ErrorFlyIn
+from typing import Tuple, Any
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -10,6 +9,10 @@ from error import ErrorFlyIn
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█░█░░█░░█░█░░█░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀▀▀░▀▀▀░▀░▀░░▀░
 class Point:
+    VISUAL_SCALE: int = 30
+    VISUAL_PADDING: int = 5
+    _visual_shift: int | Point = 0
+
     def __init__(
         self,
         row: int = 0,
@@ -18,19 +21,6 @@ class Point:
         """2D point, saved with row/col values"""
         self.row: int = row
         self.col: int = col
-
-    # ########################################################################
-    # ############################################################# PARSE ####
-    @staticmethod
-    def parse(x: str, y: str) -> Point:
-        try:
-            return Point(int(y), int(x))
-        except ValueError:
-            raise ErrorPoint(f"Impossible to convert '({x},{y})'")
-
-    @staticmethod
-    def from_xy(x: str, y: str) -> Point:
-        return Point(int(y), int(x))
 
     # ########################################################################
     # ############################################################# X / Y ####
@@ -84,6 +74,33 @@ class Point:
         if isinstance(other, Point):
             return self.row == other.row and self.col == other.col
         raise ErrorPoint("Operator 'equal' only allows Points")
+
+    # ########################################################################
+    # ###################################################### VISUAL POINT ####
+    @classmethod
+    def set_visual_shift(cls, shift: Point) -> None:
+        cls._visual_shift = shift
+
+    @property
+    def visual(self) -> Point:
+        return (
+            self * Point.VISUAL_SCALE
+            + Point._visual_shift
+            + Point.VISUAL_PADDING
+        )
+
+    # ########################################################################
+    # ############################################################# PARSE ####
+    @staticmethod
+    def parse(x: str, y: str) -> Point:
+        try:
+            return Point(int(y), int(x))
+        except ValueError:
+            raise ErrorPoint(f"Impossible to convert '({x},{y})'")
+
+    @staticmethod
+    def from_xy(x: str, y: str) -> Point:
+        return Point(int(y), int(x))
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
