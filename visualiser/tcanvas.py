@@ -1,10 +1,7 @@
-from typing import Tuple
 from textual.color import Color
 from textual_canvas import Canvas
 
 from point import Point
-from models.hub import Hub
-from models.map import Map
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -12,11 +9,9 @@ from models.map import Map
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░█░░░█▀█░█░█░▀▄▀░█▀█░▀▀█
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀▀▀░▀░▀░▀░▀░░▀░░▀░▀░▀▀▀
 class TCanvas(Canvas):
-    _SCALE: int = 30
     _RADIUS: int = 2
-    _PADDING: int = 20
 
-    def __init__(self, width, height) -> None:
+    def __init__(self, width: int, height: int) -> None:
         super().__init__(width, height)
 
     # ########################################################################

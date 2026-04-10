@@ -10,12 +10,15 @@ TMap {
 }
 
 Canvas {
+	position: absolute;
+	offset: 0 0;
+	
 	width: auto;
 	height: auto;
 
 	margin: 1;
 	background: $background;
-	border: round red;
+	# border: round red;
 }
 
 .tmap_layout {
@@ -35,23 +38,12 @@ TDrone {
 THub {
 	position: absolute;
 	border: round $accent;
-
-	width: 9;
-	height: 6;
-
-	padding: 0;
-	# width: auto;
-	# height: auto;
 }
 
-
-.hub_label {
+.hub_h {
 	offset: 2 0;
 	width: auto;
-	height: auto;
-	# border: round $accent;
-	padding: 0;
-	margin: 0;
+	height: 2;
 }
 
 .hub_name {

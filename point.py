@@ -78,16 +78,14 @@ class Point:
     # ########################################################################
     # ###################################################### VISUAL POINT ####
     @classmethod
-    def set_visual_shift(cls, shift: Point) -> None:
-        cls._visual_shift = shift
+    def set_visual_shift(cls, shift_row: int, shift_col: int) -> None:
+        cls._visual_shift = Point(shift_row, shift_col)
 
     @property
     def visual(self) -> Point:
         return (
-            self * Point.VISUAL_SCALE
-            + Point._visual_shift
-            + Point.VISUAL_PADDING
-        )
+            self + Point._visual_shift
+        ) * Point.VISUAL_SCALE + Point.VISUAL_PADDING
 
     # ########################################################################
     # ############################################################# PARSE ####

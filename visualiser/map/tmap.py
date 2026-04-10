@@ -1,13 +1,13 @@
-from point import Point
-from models.hub import Hub
-from visualiser.map.thub import THub
 import asyncio
-from typing import override, Tuple
+from point import Point
+from models.map import Map
+from models.hub import Hub
+from typing import override, Tuple, List
 
 from textual.widget import Widget
 from textual.app import ComposeResult
 
-from models.map import Map
+from visualiser.map.thub import THub
 from visualiser.animation import Anim
 from visualiser.tcanvas import TCanvas
 from visualiser.map.tdrone import TDrone
@@ -23,11 +23,11 @@ class TMap(Widget, Anim):
         Anim.__init__(self)
 
         self._map = map
+        self._drones: List[TDrone] = []
 
-        # Size ?
-        # TODO: embelish that
+        # Set the size & create the canvas --
         height, width = self._get_visual_size()
-        self._get_visual_shift()
+        self._up_visual_shift()
 
         width = (
             width * Point.VISUAL_SCALE if width > 0 else Point.VISUAL_SCALE
@@ -38,32 +38,68 @@ class TMap(Widget, Anim):
 
         self._canvas = TCanvas(width, height)
 
-        self._blah_position = 2
-        self._drones = [
-            # TDrone(),
-            # TDrone(),
-            # TDrone(),
-            # TDrone(),
-            # TDrone(),
-            # TDrone(),
-        ]
-
-        self._hubs = [
-            # THub(),
-            # THub(),
-            # THub(),
-        ]
-
-        for i, d in enumerate(self._drones):
-            d.styles.offset = (3, (i + 2) * 4)
-
-        for i, h in enumerate(self._hubs):
-            h.styles.offset = (20, (i + 2) * 5)
-
-        self._canvas.draw_line(5, 5, 10, 10)
+    # ########################################################################
+    # ########################################################### COMPOSE ####
+    def compose(self) -> ComposeResult:
+        yield self._canvas
 
     # ########################################################################
-    # ########################################################## GET SIZE ####
+    # ######################################################## UP COLOURS ####
+    def up_colours(self) -> None:
+        for d in self._drones:
+            d.up_colours()
+
+    # ########################################################################
+    # ######################################################### DRAW HUBS ####
+    async def draw_hubs(self) -> None:
+
+        self._canvas.set_pixel(10, 15)
+
+        # hub = Hub("blah", Point(10, 15))
+        # self.mount(THub(hub))
+
+        # return None
+
+        done = list()
+
+        if self._canvas:
+            for hub_from, hub_to in self._map.get_connections():
+                if hub_from.name not in done:
+                    self.mount(THub(hub_from))
+                    done.append(hub_from.name)
+
+                if hub_to.name not in done:
+                    self.mount(THub(hub_to))
+                    done.append(hub_to.name)
+
+                # self.notify(f"draw that point: {hub_from.point}")
+                # self.notify(f"draw that adapted: {hub_from.point.visual}")
+                self._canvas.draw_adapted_circle(hub_from.point)
+                # await asyncio.sleep(0.02)
+                self._canvas.draw_adapted_circle(hub_to.point)
+                await asyncio.sleep(0.02)
+                self._canvas.draw_adapted_line(hub_from.point, hub_to.point)
+                await asyncio.sleep(0.01)
+
+    # ########################################################################
+    # ######################################################## ANIMATIONS ####
+    @override
+    async def anim_on(self) -> None:
+        for drone in self._drones:
+            await drone.anim_on()
+
+    @override
+    async def anim_off(self) -> None:
+        for drone in self._drones:
+            await drone.anim_off()
+
+    # ###################################################################### #
+    # ###################################################################### #
+    # ############################## VISUAL SIZE ########################### #
+    # !! The canvas pixel system works by dividing a char by 2 on y !!
+
+    # ###################################################################### #
+    # ################################################### GET VISUAL SIZE ## #
     def _get_visual_size(self) -> Tuple[int, int]:
         """
         Get the required size of the canvas.
@@ -83,8 +119,8 @@ class TMap(Widget, Anim):
         return (0, 0)
 
     # ########################################################################
-    # ######################################################### GET SHIFT ####
-    def _get_visual_shift(self) -> None:
+    # ################################################## GET VISUAL SHIFT ####
+    def _up_visual_shift(self) -> None:
         """
         Compute a 'shift' value to move the graph at the top left.
         """
@@ -93,69 +129,10 @@ class TMap(Widget, Anim):
             min_col: Hub = min(self._map.hubs, key=lambda h: h.point.col)
 
             if min_row and min_col:
-                row: int = min_row.point.row * Point.VISUAL_SCALE
-                col: int = min_col.point.col * Point.VISUAL_SCALE
+                row: int = min_row.point.row
+                col: int = min_col.point.col
 
                 shift_row = abs(row) if row < 0 else -row
                 shift_col = abs(col) if col < 0 else -col
 
-                # TODO: adapt padding -----------------------------
-                self._shift = Point(
-                    shift_row + Point.VISUAL_PADDING,
-                    shift_col + Point.VISUAL_PADDING,
-                )
-
-                self.notify(f"shift set: {Point(shift_row, shift_col)}")
-                Point.set_visual_shift(Point(shift_row, shift_col))
-
-    # ########################################################################
-    # ######################################################## UP COLOURS ####
-    def up_colours(self) -> None:
-        for d in self._drones:
-            d.up_colours()
-
-    def move_baby(self) -> None:
-        self._blah_position += 1
-        # self._test_overlay.styles.offset = (self._blah_position, 6)
-        for i, d in enumerate(self._drones):
-            d.styles.offset = (self._blah_position, d.offset[1])
-
-    # ########################################################################
-    # ########################################################### COMPOSE ####
-    def compose(self) -> ComposeResult:
-
-        # with VerticalGroup():
-        yield self._canvas
-
-        for hub in self._hubs:
-            yield hub
-
-        for drone in self._drones:
-            yield drone
-
-    # ########################################################################
-    # ######################################################### DRAW HUBS ####
-    async def draw_hubs(self) -> None:
-
-        if self._canvas:
-            for hub_from, hub_to in self._map.get_connections():
-                self.notify(f"draw that point: {hub_from.point}")
-                self.notify(f"draw that adapted: {hub_from.point.visual}")
-                self._canvas.draw_adapted_circle(hub_from.point)
-                await asyncio.sleep(0.02)
-                self._canvas.draw_adapted_circle(hub_to.point)
-                await asyncio.sleep(0.02)
-                self._canvas.draw_adapted_line(hub_from.point, hub_to.point)
-                await asyncio.sleep(0.01)
-
-    # ########################################################################
-    # ######################################################## ANIMATIONS ####
-    @override
-    async def anim_on(self) -> None:
-        for drone in self._drones:
-            await drone.anim_on()
-
-    @override
-    async def anim_off(self) -> None:
-        for drone in self._drones:
-            await drone.anim_off()
+                Point.set_visual_shift(shift_row, shift_col)
