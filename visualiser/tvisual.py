@@ -1,3 +1,4 @@
+from error import ErrorFlyIn
 import asyncio
 from textual import work
 from textual.containers import Vertical, ScrollableContainer
@@ -96,6 +97,11 @@ class TVisual(App):
 
                 # self.push_screen(TMessageSuccess(str(self._parser)))
                 await self.push_screen_wait(TMessageSuccess(str(self._parser)))
+
+            except ErrorFlyIn as ef:
+                await self.push_screen_wait(
+                    TMessageError(ef.str_with_context())
+                )
 
             except Exception as e:
                 # self.push_screen(TMessageError(str(e)))

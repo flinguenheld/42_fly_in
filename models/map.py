@@ -52,43 +52,47 @@ class Map:
         return self._hubs
 
     # ######################################################### += ####
+    @ErrorFlyIn.spread(title="Add hub in map")
     def __iadd__(self, hub: Hub) -> Map:
         """
         Add the hub inside the map
 
-        Raise ErrorMap if name or point already exist in the map
+        Raise ErrorFlyIn if name or point already exist in the map
         """
         if any(h.name == hub.name for h in self._hubs):
-            raise ErrorMap(f"{hub.name} already exists in the map.")
+            raise ErrorFlyIn(f"{hub.name} already exists in the map.")
 
         if any(h.point == hub.point for h in self._hubs):
-            raise ErrorMap(f"There is already a hub at {hub.point}.")
+            raise ErrorFlyIn(f"There is already a hub at {hub.point}.")
 
         if hub.type != Hub.Type.REGULAR and any(
             h.type == hub.type for h in self._hubs
         ):
-            raise ErrorMap(f"There is already a {hub.type} in the map.")
+            raise ErrorFlyIn(f"There is already a {hub.type} in the map.")
 
         self._hubs.append(hub)
         return self
 
     # #################################################### CONNECT ####
+    @ErrorFlyIn.spread(title="Connect two hubs")
     def connect_hubs(self, from_name: str, to_name: str) -> None:
         """
         Add 'to' to 'from'
 
-        Raise ErrorMap to or from hubs are not found in the hub list
+        Raise ErrorFlyIn to or from hubs are not found in the hub list
         """
         hub_from = next((h for h in self._hubs if h.name == from_name), None)
         hub_to = next((h for h in self._hubs if h.name == to_name), None)
 
         if not hub_from:
-            raise ErrorMap(
-                f"Connect hub: '{from_name}' doesn't exist in the map."
+            raise ErrorFlyIn(
+                f"The hub '{from_name}' doesn't exist in the map.",
+                # title="Hub connection",
             )
         if not hub_to:
-            raise ErrorMap(
-                f"Connect hub: '{to_name}' doesn't exist in the map."
+            raise ErrorFlyIn(
+                f"The hub: '{to_name}' doesn't exist in the map.",
+                # title="Hub connection",
             )
 
         hub_from += hub_to
@@ -99,16 +103,19 @@ class Map:
     def nb_drones(self) -> int:
         return self._nb_drones
 
+    # TODO: WHAT IS THAT - CHECK IS ALREADY DONE BELOW ????
     @nb_drones.setter
+    @ErrorFlyIn.spread(title="Number of drones")
     def nb_drones(self, nb: int) -> None:
         if nb < 1:
-            raise ErrorMap("Nb drones cannot be less than 1")
+            raise ErrorFlyIn("Nb drones cannot be less than 1")
 
         self._nb_drones = nb
 
     # ########################################################################
     # ############################################################# VALID ####
     @property
+    @ErrorFlyIn.spread(title="Map validation")
     def is_valid(self) -> bool:
         """
         Perform tests and raise an ErrorMap on any invalid one
@@ -116,20 +123,20 @@ class Map:
         """
 
         if self._nb_drones < 2:
-            raise ErrorMap("Map needs at least two drones")
+            raise ErrorFlyIn("Map needs at least two drones")
 
         if not any(h.point == Hub.Type.START for h in self._hubs):
-            raise ErrorMap("Map needs at least one starting hub")
+            raise ErrorFlyIn("Map needs at least one starting hub")
 
         if not any(h.point == Hub.Type.END for h in self._hubs):
-            raise ErrorMap("Map needs at least one ending hub")
+            raise ErrorFlyIn("Map needs at least one ending hub")
 
         if not any(h.point == Hub.Type.REGULAR for h in self._hubs):
-            raise ErrorMap("Map needs at least one REGULAR hub")
+            raise ErrorFlyIn("Map needs at least one REGULAR hub")
 
         return True
 
-    # TODO: TEST THE GRAP LOGIC - ARE ALL HUBS CONNECTED ??
+    # TODO: TEST THE GRAPH LOGIC - ARE ALL HUBS CONNECTED ??
     def test_hubs(self) -> bool:
         return True
 
@@ -142,12 +149,3 @@ class Map:
             f"Hubs ({len(self._hubs)}):\n"
             f"{'\n'.join((str(h) for h in self._hubs))}"
         )
-
-
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█▀▄░█▀▄░█▀█░█▀▄
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█▀▄░█▀▄░█░█░█▀▄
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀▀▀░▀░▀░▀░▀░▀▀▀░▀░▀
-class ErrorMap(ErrorFlyIn):
-    def __init__(self, message: str) -> None:
-        super().__init__(f"Map error:\n{message}")

@@ -40,7 +40,7 @@ class Hub:
     @name.setter
     def name(self, txt: str) -> None:
         if "-" in txt:
-            raise ErrorHub(f"Dashes are forbidden in hub name ({txt}).")
+            raise ErrorFlyIn(f"Dashes are forbidden in hub name ({txt}).")
         self._name = txt
 
     # ########################################################################
@@ -69,6 +69,7 @@ class Hub:
     # ########################################################################
     # ############################################################# PARSE ####
     @staticmethod
+    @ErrorFlyIn.spread("Hub parsing")
     def parse(text: str) -> Hub:
         """
         Create a Hub according to the given text.
@@ -78,38 +79,25 @@ class Hub:
         format: 'hub: roof1 3 4 [zone=restricted color=red]'
         """
 
-        try:
-            it = iter(text.split())
+        it = iter(text.split())
 
-            # Starting line --
-            match next(it):
-                case "start_hub:":
-                    type = Hub.Type.START
-                case "end_hub:":
-                    type = Hub.Type.END
-                case "hub:":
-                    type = Hub.Type.REGULAR
-                case _:
-                    raise ErrorHub(f"{text[:10]} does not start with 'hub: '")
+        # Starting line --
+        match next(it):
+            case "start_hub:":
+                type = Hub.Type.START
+            case "end_hub:":
+                type = Hub.Type.END
+            case "hub:":
+                type = Hub.Type.REGULAR
+            case _:
+                raise ErrorFlyIn("Line does not start with 'hub'.", line=text)
 
-            # Name --
-            name = next(it)
+        # Name --
+        name = next(it)
 
-            # Coordinates --
-            point = Point.parse(x=next(it), y=next(it))
+        # Coordinates --
+        point = Point.parse(x=next(it), y=next(it))
 
-            # Options ?
+        # Options ?
 
-            return Hub(name, point, type)
-
-        except Exception as e:
-            raise ErrorHub(str(e))
-
-
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█▀▄░█▀▄░█▀█░█▀▄
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█▀▄░█▀▄░█░█░█▀▄
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀▀▀░▀░▀░▀░▀░▀▀▀░▀░▀
-class ErrorHub(ErrorFlyIn):
-    def __init__(self, message: str) -> None:
-        super().__init__(f"Hub error:\n{message}")
+        return Hub(name, point, type)

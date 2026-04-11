@@ -23,7 +23,6 @@ class TMap(Widget, Anim):
         Anim.__init__(self)
 
         self._map = map
-        self._drones: List[TDrone] = []
 
         # Set the size & create the canvas --
         height, width = self._get_visual_size()
@@ -37,6 +36,11 @@ class TMap(Widget, Anim):
         ) + Point.VISUAL_PADDING * 2
 
         self._canvas = TCanvas(width, height)
+
+        # Drones --
+        self._drones: List[TDrone] = [
+            TDrone() for _ in range(self._map.nb_drones)
+        ]
 
     # ########################################################################
     # ########################################################### COMPOSE ####
