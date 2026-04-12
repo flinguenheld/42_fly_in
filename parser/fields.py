@@ -1,22 +1,26 @@
+from typing import Dict
 from error import ErrorFlyIn
 
 
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░▀█▀░█▀▀░█░░░█▀▄░█▀▀
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░░█░░█▀▀░█░░░█░█░▀▀█
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀▀▀░▀▀▀░▀▀▀░▀▀░░▀▀▀
 class Fields:
-    def __init__(self, line: str):
+    def __init__(self, line: str) -> None:
         self.line = line
         self._regular = ""
         self._fields = line.split()
-        self._dict = {}
+        self._dict: Dict[str, str] = {}
 
-    def __str__(self):
-        return str(self._dict)
-
-    @ErrorFlyIn.spread(title="Extract fields")
-    def extract(self):
+    @ErrorFlyIn.spread(title="Extract fields from line")
+    def extract(self) -> None:
         self._extract_options()
         self._extract_regular()
 
-    def _extract_options(self):
+    # ########################################################################
+    # ####################################################### EXTRACTIONS ####
+    def _extract_options(self) -> None:
         if "[" in self.line:
             self._regular, options = self.line.split("[")
             if options[-1] != "]":
@@ -33,7 +37,7 @@ class Fields:
         else:
             self._regular = self.line
 
-    def _extract_regular(self):
+    def _extract_regular(self) -> None:
         self._dict.update(
             {
                 str(i): value.strip()
@@ -41,14 +45,27 @@ class Fields:
             }
         )
 
-    def get(self, key: str) -> str:
-        if key not in self._dict:
-            raise ErrorFlyIn(f"Invalid field '{key}'.", line="blototot")
-        return self._dict[key]
-
+    # ########################################################################
+    # ############################################################### HAS ####
     def has(self, key: str) -> bool:
         return key in self._dict
 
+    # ########################################################################
+    # ############################################################### GET ####
+    def get(self, key: str, help: str = "") -> str:
+        if key not in self._dict:
+            txt = help if help else key
+            raise ErrorFlyIn(f"Field '{txt}' not found.")
+        else:
+            return self._dict[key]
+
+    # ########################################################################
+    # ############################################################ HEADER ####
     @property
     def header(self) -> str:
-        return self._dict["0"]
+        return self.get("0", "header")
+
+    # ########################################################################
+    # ############################################################### STR ####
+    def __str__(self) -> str:
+        return str(self._dict)

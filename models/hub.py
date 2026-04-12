@@ -120,10 +120,10 @@ class Hub:
                 )
 
         # Name --
-        name = field.get("1")
+        name = field.get("1", "Hub name")
 
         # Coordinates --
-        point = Point.parse(x=field.get("2"), y=field.get("3"))
+        point = Point.parse(x=field.get("2", "X"), y=field.get("3", "Y"))
 
         # Options --
         zone = field.get("zone") if field.has("zone") else "regular"
@@ -131,8 +131,8 @@ class Hub:
         max_dr = field.get("max_drones") if field.has("max_drones") else "0"
 
         try:
-            max_dr = int(max_dr)
+            max_d = int(max_dr)
         except ValueError:
             raise ErrorFlyIn("Invalid 'max_drones' value", line=field.line)
 
-        return Hub(name, point, type, Hub.Zone.from_txt(zone), color, max_dr)
+        return Hub(name, point, type, Hub.Zone.from_txt(zone), color, max_d)

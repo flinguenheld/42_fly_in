@@ -1,7 +1,8 @@
 from __future__ import annotations
+
+from models.hub import Hub
 from error import ErrorFlyIn
 from typing import List, Iterator, Tuple
-from models.hub import Hub
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -84,16 +85,14 @@ class Map:
         hub_from = next((h for h in self._hubs if h.name == from_name), None)
         hub_to = next((h for h in self._hubs if h.name == to_name), None)
 
+        if from_name == to_name:
+            raise ErrorFlyIn(f"Cannot connect hub '{to_name}' with itself.")
+
         if not hub_from:
-            raise ErrorFlyIn(
-                f"The hub '{from_name}' doesn't exist in the map.",
-                # title="Hub connection",
-            )
+            raise ErrorFlyIn(f"Hub '{from_name}' doesn't exist in the map.")
+
         if not hub_to:
-            raise ErrorFlyIn(
-                f"The hub: '{to_name}' doesn't exist in the map.",
-                # title="Hub connection",
-            )
+            raise ErrorFlyIn(f"Hub: '{to_name}' doesn't exist in the map.")
 
         hub_from += hub_to
 
