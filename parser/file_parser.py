@@ -1,3 +1,6 @@
+from __future__ import annotations
+from parser.fields import Fields
+
 import os
 from models.map import Map
 from error import ErrorFlyIn
@@ -39,33 +42,41 @@ class FileParser:
     @ErrorFlyIn.spread(title="Parsing file")
     def parse_file(self) -> None:
         if self._path:
+            lines: List[Fields] = []
             with open(self._path, "r") as file:
-                lines: List[str] = [
-                    line
-                    for line in file.readlines()
-                    if line and line.strip() and not line.startswith("#")
-                ]
+                for line in file.readlines():
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+
+                    fields = Fields(line)
+                    fields.extract()
+
+                    lines.append(fields)
 
                 if not lines:
                     self._raise_errorfile("File is empty.")
 
                 self._parse_nb_drones(lines[0])
-                self._parse_hubs(ln for ln in lines if "hub" in ln.split()[0])
-                self._parse_connections(
-                    ln for ln in lines if ln.startswith("connection: ")
-                )
+                self._parse_hubs(fd for fd in lines if "hub" in fd.header)
+                # self._parse_connections(
+                #     ln for ln in lines if ln.startswith("connection: ")
+                # )
 
     # ########################################################################
     # ######################################################### NB DRONES ####
     @ErrorFlyIn.spread(title="Number of drones")
-    def _parse_nb_drones(self, first_line: str) -> None:
-        if not first_line.startswith("nb_drones: "):
+    def _parse_nb_drones(self, first_line: Fields) -> None:
+
+        if first_line.header != "nb_drones:":
             self._raise_errorfile("File does not start with 'nb_drones: '.")
 
+        nb = first_line.get("1")
+
         try:
-            self._new_map.nb_drones = int(first_line[10:].strip())
+            self._new_map.nb_drones = int(nb)
         except ValueError:
-            self._raise_errorfile("Invalid drone number.", first_line)
+            self._raise_errorfile("Invalid drone number.", first_line.line)
 
     # ########################################################################
     # ############################################################## HUBS ####
@@ -73,7 +84,6 @@ class FileParser:
     def _parse_hubs(self, lines: Iterator[str]) -> None:
         for line in lines:
             try:
-                line = line.strip()
                 self._new_map += Hub.parse(line)
 
             except ErrorFlyIn as e:
@@ -121,8 +131,3 @@ class FileParser:
             raise ErrorFlyIn(text, file=self._path, line=line)
         else:
             raise ErrorFlyIn(text, file=self._path)
-
-
-class LineParser:
-    def __init__(self, line: str):
-        self._line = line

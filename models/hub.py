@@ -1,4 +1,5 @@
 from __future__ import annotations
+from parser.fields import Fields
 from enum import Enum
 from typing import Set
 from point import Point
@@ -15,7 +16,32 @@ class Hub:
         START = 1
         END = 2
 
-    def __init__(self, name: str, point: Point, type: Hub.Type = Type.REGULAR):
+    class Zone(Enum):
+        REGULAR = 0
+        RESTRICTED = 1
+        PRIORITY = 2
+
+        @staticmethod
+        def from_txt(text: str) -> Hub.Zone:
+            match text.upper():
+                case "PRIORITY":
+                    return Hub.Zone.PRIORITY
+                case "RESTRICTED":
+                    return Hub.Zone.RESTRICTED
+                case "REGULAR":
+                    return Hub.Zone.REGULAR
+                case _:
+                    raise ErrorFlyIn(f"Invalid zone value '{text}'.")
+
+    def __init__(
+        self,
+        name: str,
+        point: Point,
+        type: Hub.Type = Type.REGULAR,
+        zone: Zone = Zone.REGULAR,
+        color: str = "white",
+        max_drones: int = 0,
+    ):
         self.name = name
         self._point: Point = point
         self._type: Hub.Type = type
@@ -70,19 +96,18 @@ class Hub:
     # ############################################################# PARSE ####
     @staticmethod
     @ErrorFlyIn.spread("Hub parsing")
-    def parse(text: str) -> Hub:
+    def parse(field: Fields) -> Hub:
         """
         Create a Hub according to the given text.
-        Raise ErrorHub
-
+        Raise ErrorFlyIn
 
         format: 'hub: roof1 3 4 [zone=restricted color=red]'
         """
 
-        it = iter(text.split())
+        # it = iter(text.split())
 
         # Starting line --
-        match next(it):
+        match field.header:
             case "start_hub:":
                 type = Hub.Type.START
             case "end_hub:":
@@ -90,14 +115,24 @@ class Hub:
             case "hub:":
                 type = Hub.Type.REGULAR
             case _:
-                raise ErrorFlyIn("Line does not start with 'hub'.", line=text)
+                raise ErrorFlyIn(
+                    "Line does not start with 'hub'.", line=field.line
+                )
 
         # Name --
-        name = next(it)
+        name = field.get("1")
 
         # Coordinates --
-        point = Point.parse(x=next(it), y=next(it))
+        point = Point.parse(x=field.get("2"), y=field.get("3"))
 
-        # Options ?
+        # Options --
+        zone = field.get("zone") if field.has("zone") else "regular"
+        color = field.get("color") if field.has("color") else "white"
+        max_dr = field.get("max_drones") if field.has("max_drones") else "0"
 
-        return Hub(name, point, type)
+        try:
+            max_dr = int(max_dr)
+        except ValueError:
+            raise ErrorFlyIn("Invalid 'max_drones' value", line=field.line)
+
+        return Hub(name, point, type, Hub.Zone.from_txt(zone), color, max_dr)
