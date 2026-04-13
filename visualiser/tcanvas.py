@@ -16,15 +16,13 @@ class TCanvas(Canvas):
 
     # ########################################################################
     # ################################################# DRAWING FUNCTIONS ####
-    def draw_adapted_circle(
-        self, center: Point, color: Color | None = None
-    ) -> None:
+    def draw_adapted_circle(self, center: Point, color: Color) -> None:
         # TODO: Still usefull ???
         point = center.visual
         super().draw_circle(point.x, point.y, TCanvas._RADIUS, color)
 
     def draw_adapted_line(
-        self, pt_from: Point, pt_to: Point, color: Color | None = None
+        self, pt_from: Point, pt_to: Point, color: Color
     ) -> None:
         fr = pt_from.visual
         to = pt_to.visual

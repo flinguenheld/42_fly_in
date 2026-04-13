@@ -6,7 +6,7 @@ import asyncio
 from itertools import pairwise
 
 from point import Point
-from visualiser.theme import Theme
+from visualiser.ftheme import FTheme
 
 from textual_canvas import Canvas
 
@@ -58,19 +58,21 @@ class TDrone(Canvas, Anim):
 
                     if self._blink_on:
                         if cur.light == "babord":
-                            self.set_pixel(cur.left.x, cur.left.y, Theme.error)
+                            self.set_pixel(
+                                cur.left.x, cur.left.y, FTheme.error
+                            )
                         elif cur.light == "tribord":
                             self.set_pixel(
-                                cur.left.x, cur.left.y, Theme.success
+                                cur.left.x, cur.left.y, FTheme.success
                             )
                         else:
                             self.set_pixel(
-                                cur.left.x, cur.left.y, Theme.primary
+                                cur.left.x, cur.left.y, FTheme.primary
                             )
                     else:
-                        self.set_pixel(cur.left.x, cur.left.y, Theme.primary)
+                        self.set_pixel(cur.left.x, cur.left.y, FTheme.primary)
 
-                    self.set_pixel(cur.right.x, cur.right.y, Theme.primary)
+                    self.set_pixel(cur.right.x, cur.right.y, FTheme.primary)
                     await asyncio.sleep(self._speed)
 
                 self._up_light_and_speed()
@@ -92,5 +94,5 @@ class TDrone(Canvas, Anim):
     # ########################################################################
     # ######################################################## UP COLOURS ####
     def up_colours(self) -> None:
-        self.clear(Theme.background)
-        self.set_pixel(1, 1, Theme.primary)
+        self.clear(FTheme.background)
+        self.set_pixel(1, 1, FTheme.primary)

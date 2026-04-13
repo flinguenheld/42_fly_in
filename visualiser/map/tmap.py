@@ -8,6 +8,7 @@ from textual.widget import Widget
 from textual.app import ComposeResult
 
 from visualiser.map.thub import THub
+from visualiser.ftheme import FTheme
 from visualiser.animation import Anim
 from visualiser.tcanvas import TCanvas
 from visualiser.map.tdrone import TDrone
@@ -78,11 +79,17 @@ class TMap(Widget, Anim):
 
                 # self.notify(f"draw that point: {hub_from.point}")
                 # self.notify(f"draw that adapted: {hub_from.point.visual}")
-                self._canvas.draw_adapted_circle(hub_from.point)
+                self._canvas.draw_adapted_circle(
+                    hub_from.point, FTheme.foreground
+                )
                 # await asyncio.sleep(0.02)
-                self._canvas.draw_adapted_circle(hub_to.point)
+                self._canvas.draw_adapted_circle(
+                    hub_to.point, FTheme.foreground
+                )
                 await asyncio.sleep(0.02)
-                self._canvas.draw_adapted_line(hub_from.point, hub_to.point)
+                self._canvas.draw_adapted_line(
+                    hub_from.point, hub_to.point, FTheme.foreground
+                )
                 await asyncio.sleep(0.01)
 
     # ########################################################################

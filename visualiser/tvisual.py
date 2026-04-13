@@ -8,8 +8,8 @@ from textual.app import App, ComposeResult
 from models.map import Map
 from parser.file_parser import FileParser
 
-from visualiser.theme import Theme
 from visualiser.tfile import TFile
+from visualiser.ftheme import FTheme
 from visualiser.map.tmap import TMap
 from visualiser.animation import Anim
 from visualiser.ttitle import TTitleMain
@@ -42,7 +42,7 @@ class TVisual(App):
 
         self._map: Map | None = None
         self._tmap: TMap | None = None
-        self._theme = Theme(self.app)
+        self._theme = FTheme(self.app)
 
         self._layout_map = ScrollableContainer(classes="tmap_layout")
 
@@ -67,9 +67,9 @@ class TVisual(App):
 
     # ########################################################################
     # ############################################################# MOUNT ####
-    def on_mount(self) -> None:
-        self._theme.next(self.app)
-        self.action_file_selection()
+    async def on_mount(self) -> None:
+        self._theme.next()
+        self.call_later(self.action_file_selection)
 
     # ################################################ TESTS #################
     # ################################################ TESTS #################
@@ -114,6 +114,6 @@ class TVisual(App):
     # ########################################################################
     # ########################################################### THEMES #####
     def action_next_theme(self) -> None:
-        self._theme.next(self.app)
+        self._theme.next()
         if self._tmap:
             self._tmap.up_colours()
