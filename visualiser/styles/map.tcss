@@ -41,8 +41,11 @@ THub {
 }
 
 .hub_h {
-	offset: 2 0;
-	width: auto;
+	# offset: 2 0;
+
+	width: 100%;
+	text-align: center;
+
 	height: 2;
 }
 
