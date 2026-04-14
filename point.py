@@ -10,7 +10,7 @@ from typing import Tuple, Any
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀▀▀░▀▀▀░▀░▀░░▀░
 class Point:
     VISUAL_SCALE: int = 30
-    VISUAL_PADDING: int = 5
+    VISUAL_PADDING: int = 6
     _visual_shift: int | Point = 0
 
     def __init__(

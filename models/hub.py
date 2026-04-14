@@ -14,11 +14,13 @@ from visualiser.ftheme import FTheme
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀█░█░█░█▀▄
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░▀░▀▀▀░▀▀░
 class Hub:
+    # ############################################################## TYPE ####
     class Type(Enum):
         REGULAR = 0
         START = 1
         END = 2
 
+    # ############################################################## ZONE ####
     class Zone(Enum):
         NORMAL = 0
         BLOCKED = 1
@@ -39,6 +41,7 @@ class Hub:
                 case _:
                     raise ErrorFlyIn(f"Invalid zone value '{text}'.")
 
+    # ########################################################################
     def __init__(
         self,
         name: str,
@@ -114,8 +117,6 @@ class Hub:
         format: 'hub: roof1 3 4 [zone=restricted color=red]'
         """
 
-        # it = iter(text.split())
-
         # Starting line --
         match field.header:
             case "start_hub:":
@@ -129,13 +130,9 @@ class Hub:
                     "Line does not start with 'hub'.", line=field.line
                 )
 
-        # Name --
         name = field.get("1", "Hub name")
-
-        # Coordinates --
         point = Point.parse(x=field.get("2", "X"), y=field.get("3", "Y"))
 
-        # Options --
         zone = field.get("zone") if field.has("zone") else "normal"
         color = field.get("color") if field.has("color") else "white"
         max_dr = field.get("max_drones") if field.has("max_drones") else "0"

@@ -34,7 +34,7 @@ class TMap(Widget, Anim):
         ) + Point.VISUAL_PADDING * 2
         height = (
             height * Point.VISUAL_SCALE if height > 0 else Point.VISUAL_SCALE
-        ) + Point.VISUAL_PADDING * 2
+        ) + Point.VISUAL_PADDING * 3
 
         self._canvas = TCanvas(width, height)
 
@@ -57,13 +57,6 @@ class TMap(Widget, Anim):
     # ########################################################################
     # ######################################################### DRAW HUBS ####
     async def draw_hubs(self) -> None:
-
-        self._canvas.set_pixel(10, 15)
-
-        # hub = Hub("blah", Point(10, 15))
-        # self.mount(THub(hub))
-
-        # return None
 
         done = list()
 
