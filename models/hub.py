@@ -126,7 +126,7 @@ class Hub:
 
         zone = field.get("zone") if field.has("zone") else "normal"
         color = field.get("color") if field.has("color") else "white"
-        max_dr = field.get("max_drones") if field.has("max_drones") else "0"
+        max_dr = field.get("max_drones") if field.has("max_drones") else "1"
 
         # Adapt options --
         color = FTheme._clean_color(color)
