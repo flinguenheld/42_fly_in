@@ -15,33 +15,33 @@ from visualiser.map.tdrone import TDrone
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░█▄█░█▀█░█▀█
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░█░█░█▀█░█▀▀
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀░▀░▀░▀░▀░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░█▄█░█▀█░█▀█░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░█░█░█▀█░█▀▀░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀░▀░▀░▀░▀░░░░
 class TMap(Widget, Anim):
+    HEIGHT_MINI = 5
+
     def __init__(self, map: Map) -> None:
         Widget.__init__(self)
         Anim.__init__(self)
 
         self._map = map
 
-        # Set the size & create the canvas --
-        height, width = self._get_visual_size()
+        # Get the size & create canvas --
+        self._canvas = TCanvas(*self._get_visual_size())
         self._up_visual_shift()
-
-        width = (
-            width * Point.VISUAL_SCALE if width > 0 else Point.VISUAL_SCALE
-        ) + Point.VISUAL_PADDING * 2
-        height = (
-            height * Point.VISUAL_SCALE if height > 0 else Point.VISUAL_SCALE
-        ) + Point.VISUAL_PADDING * 3
-
-        self._canvas = TCanvas(width, height)
 
         # Drones --
         self._drones: List[TDrone] = [
             TDrone() for _ in range(self._map.nb_drones)
         ]
+
+    async def draw_drones(self) -> None:
+        if self._map.start:
+            for d in self._drones:
+                self.mount(d)
+                d.set_position(self._map.start.point)
+                # d.set_position(Point(2, 2))
 
     # ########################################################################
     # ########################################################### COMPOSE ####
@@ -70,12 +70,10 @@ class TMap(Widget, Anim):
                     self.mount(THub(hub_to))
                     done.append(hub_to.name)
 
-                # self.notify(f"draw that point: {hub_from.point}")
-                # self.notify(f"draw that adapted: {hub_from.point.visual}")
                 self._canvas.draw_adapted_circle(
                     hub_from.point, FTheme.foreground
                 )
-                # await asyncio.sleep(0.02)
+                await asyncio.sleep(0.02)
                 self._canvas.draw_adapted_circle(
                     hub_to.point, FTheme.foreground
                 )
@@ -105,10 +103,6 @@ class TMap(Widget, Anim):
     # ###################################################################### #
     # ################################################### GET VISUAL SIZE ## #
     def _get_visual_size(self) -> Tuple[int, int]:
-        """
-        Get the required size of the canvas.
-        """
-
         max_row: Hub = max(self._map.hubs, key=lambda h: h.point.row)
         min_row: Hub = min(self._map.hubs, key=lambda h: h.point.row)
 
@@ -139,4 +133,4 @@ class TMap(Widget, Anim):
                 shift_row = abs(row) if row < 0 else -row
                 shift_col = abs(col) if col < 0 else -col
 
-                Point.set_visual_shift(shift_row, shift_col)
+                Point.visual_shift = Point(shift_row, shift_col)

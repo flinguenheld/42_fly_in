@@ -18,7 +18,8 @@ Canvas {
 
 	margin: 1;
 	background: $background;
-	# border: round red;
+
+	# border: round yellow;
 }
 
 .tmap_layout {
@@ -30,6 +31,7 @@ Canvas {
 # ########################################## DRONE ####
 TDrone {
 	position: absolute;
+	layer: above;
 	# border: round green;
 }
 
@@ -38,6 +40,7 @@ TDrone {
 THub {
 	position: absolute;
 	border: round $accent;
+	# layer: below;
 }
 
 #hub_layout {

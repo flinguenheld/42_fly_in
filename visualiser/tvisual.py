@@ -1,11 +1,12 @@
-from error import ErrorFlyIn
 import asyncio
+
 from textual import work
-from textual.containers import Vertical, ScrollableContainer
-from textual.widgets import Header, Footer
 from textual.app import App, ComposeResult
+from textual.widgets import Header, Footer
+from textual.containers import Vertical, ScrollableContainer
 
 from models.map import Map
+from error import ErrorFlyIn
 from parser.file_parser import FileParser
 
 from visualiser.tfile import TFile
@@ -17,9 +18,9 @@ from visualiser.tmessage import TMessageError, TMessageSuccess
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░█░█░▀█▀░█▀▀░█░█░█▀█░█░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░▀▄▀░░█░░▀▀█░█░█░█▀█░█░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀░░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░█░█░▀█▀░█▀▀░█░█░█▀█░█░░░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░▀▄▀░░█░░▀▀█░█░█░█▀█░█░░░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀░░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀░░
 class TVisual(App):
     CSS_PATH = [
         "styles/main.tcss",
@@ -47,16 +48,6 @@ class TVisual(App):
         self._layout_map = ScrollableContainer(classes="tmap_layout")
 
     # ########################################################################
-    # ########################################################### NEW MAP ####
-    def new_map(self, map: Map) -> None:
-        if self._tmap:
-            self._tmap.remove()
-
-        self._map = map
-        self._tmap = TMap(self._map)
-        self._layout_map.mount(self._tmap)
-
-    # ########################################################################
     # ########################################################### COMPOSE ####
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
@@ -70,6 +61,30 @@ class TVisual(App):
     async def on_mount(self) -> None:
         self._theme.next()
         self.call_later(self.action_file_selection)
+
+    # ########################################################################
+    # ############################################################# DRAW #####
+    async def action_draw(self) -> None:
+
+        if self._map:
+            if self._tmap:
+                self._tmap.remove()
+
+            self._tmap = TMap(self._map)
+            self._layout_map.mount(self._tmap)
+
+            asyncio.create_task(self._tmap.draw_drones())
+            asyncio.create_task(self._tmap.draw_hubs())
+
+    # ########################################################################
+    # ########################################################### NEW MAP ####
+    def new_map(self, map: Map) -> None:
+
+        if self._tmap:
+            self._tmap.remove()
+
+        # TODO: Add some test ??
+        self._map = map
 
     # ################################################ TESTS #################
     # ################################################ TESTS #################
@@ -106,10 +121,6 @@ class TVisual(App):
             except Exception as e:
                 # self.push_screen(TMessageError(str(e)))
                 await self.push_screen_wait(TMessageError(str(e)))
-
-    async def action_draw(self) -> None:
-        if self._tmap:
-            asyncio.create_task(self._tmap.draw_hubs())
 
     # ########################################################################
     # ########################################################### THEMES #####

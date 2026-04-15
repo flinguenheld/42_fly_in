@@ -1,33 +1,30 @@
 from __future__ import annotations
+from dataclasses import dataclass
+
 from math import sqrt
 from error import ErrorFlyIn
-from typing import Tuple, Any
+from typing import Any, ClassVar
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀█░█▀█░▀█▀░█▀█░▀█▀
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█░█░░█░░█░█░░█░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀▀▀░▀▀▀░▀░▀░░▀░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀█░█▀█░▀█▀░█▀█░▀█▀░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█░█░░█░░█░█░░█░░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀▀▀░▀▀▀░▀░▀░░▀░░░
+@dataclass(frozen=True)
 class Point:
-    VISUAL_SCALE: int = 30
-    VISUAL_PADDING: int = 6
-    _visual_shift: int | Point = 0
+    """2D point, saved with row/col values"""
 
-    def __init__(
-        self,
-        row: int = 0,
-        col: int = 0,
-    ) -> None:
-        """2D point, saved with row/col values"""
-        self.row: int = row
-        self.col: int = col
+    row: int
+    col: int
+
+    VISUAL_SCALE_ROW: ClassVar[int] = 20
+    VISUAL_SCALE_COL: ClassVar[int] = 30
+    VISUAL_PADDING_ROW: ClassVar[int] = 6
+    VISUAL_PADDING_COL: ClassVar[int] = 10
+    visual_shift: ClassVar[int | Point] = 0
 
     # ########################################################################
     # ############################################################# X / Y ####
-    @property
-    def xy(self) -> Tuple[int, int]:
-        return (self.col, self.row)
-
     @property
     def x(self) -> int:
         return self.col
@@ -35,6 +32,33 @@ class Point:
     @property
     def y(self) -> int:
         return self.row
+
+    # ########################################################################
+    # ################################################### VISUAL / CANVAS ####
+    @property
+    def visual(self) -> Point:
+
+        pt = self + Point.visual_shift
+
+        row = pt.row * Point.VISUAL_SCALE_ROW + Point.VISUAL_PADDING_ROW
+        col = pt.col * Point.VISUAL_SCALE_COL + Point.VISUAL_PADDING_COL
+
+        # Stay on even (regular widgets cannot fit on canvas odd values)
+        if row % 2 != 0:
+            row += 1
+
+        return Point(row, col)
+
+    @property
+    def canvas(self) -> Point:
+        """The canvas pixel system works by dividing a char by 2 on y !"""
+
+        pt = self + Point.visual_shift
+
+        return Point(
+            pt.row * 2 * Point.VISUAL_SCALE_ROW + Point.VISUAL_PADDING_ROW,
+            pt.col * Point.VISUAL_SCALE_COL + Point.VISUAL_PADDING_COL,
+        )
 
     # ########################################################################
     # ###################################################### CALCULATIONS ####
@@ -60,7 +84,7 @@ class Point:
         if isinstance(other, int):
             return Point(self.row + other, self.col + other)
 
-        raise ErrorPoint("Operator 'add' only allows Points or int")
+        raise ErrorFlyIn("Operator 'add' only allows Points or int")
 
     def __mul__(self, other: Any) -> Point:
         if isinstance(other, Point):
@@ -68,43 +92,14 @@ class Point:
         if isinstance(other, int):
             return Point(self.row * other, self.col * other)
 
-        raise ErrorPoint("Operator 'mul' only allows Points or int")
-
-    def __eq__(self, other: Any) -> bool:
-        if isinstance(other, Point):
-            return self.row == other.row and self.col == other.col
-        raise ErrorPoint("Operator 'equal' only allows Points")
-
-    # ########################################################################
-    # ###################################################### VISUAL POINT ####
-    @classmethod
-    def set_visual_shift(cls, shift_row: int, shift_col: int) -> None:
-        cls._visual_shift = Point(shift_row, shift_col)
-
-    @property
-    def visual(self) -> Point:
-        return (
-            self + Point._visual_shift
-        ) * Point.VISUAL_SCALE + Point.VISUAL_PADDING
+        raise ErrorFlyIn("Operator 'mul' only allows Points or int")
 
     # ########################################################################
     # ############################################################# PARSE ####
     @staticmethod
+    @ErrorFlyIn.spread(title="Point parser")
     def parse(x: str, y: str) -> Point:
         try:
             return Point(int(y), int(x))
         except ValueError:
-            raise ErrorPoint(f"Impossible to convert '({x},{y})'")
-
-    @staticmethod
-    def from_xy(x: str, y: str) -> Point:
-        return Point(int(y), int(x))
-
-
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█▀▄░█▀▄░█▀█░█▀▄
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█▀▄░█▀▄░█░█░█▀▄
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀▀▀░▀░▀░▀░▀░▀▀▀░▀░▀
-class ErrorPoint(ErrorFlyIn):
-    def __init__(self, message: str) -> None:
-        super().__init__(f"Point error:\n{message}")
+            raise ErrorFlyIn(f"Impossible to convert '({x},{y})'")

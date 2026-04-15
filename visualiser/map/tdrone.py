@@ -1,39 +1,43 @@
-from typing import override
-from visualiser.animation import Anim
 import time
 import random
 import asyncio
+from typing import override
 from itertools import pairwise
 
 from point import Point
 from visualiser.ftheme import FTheme
+from visualiser.animation import Anim
 
 from textual_canvas import Canvas
 
 
 class _Coordinate:
-    def __init__(self, left: Point, right: Point, light: str):
+    """Local class only used to draw with animation"""
+
+    def __init__(self, left: Point, right: Point, light: str) -> None:
         self.left = left
         self.right = right
         self.light = light
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░█▀▄░█▀▄░█▀█░█▀█░█▀▀
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░█░█░█▀▄░█░█░█░█░█▀▀
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀▀░░▀░▀░▀▀▀░▀░▀░▀▀▀
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀█▀░█▀▄░█▀▄░█▀█░█▀█░█▀▀░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░█░█░█▀▄░█░█░█░█░█▀▀░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀▀░░▀░▀░▀▀▀░▀░▀░▀▀▀░░
 class TDrone(Canvas, Anim):
-    animation_status: bool = True
+    WIDTH = 3
+    HEIGHT = 4
+
     _points = [
-        _Coordinate(Point(2, 0), Point(0, 2), ""),
-        _Coordinate(Point(1, 0), Point(1, 2), "babord"),
-        _Coordinate(Point(0, 0), Point(2, 2), "babord"),
-        _Coordinate(Point(0, 1), Point(2, 1), "babord"),
-        _Coordinate(Point(0, 2), Point(2, 0), ""),
-        _Coordinate(Point(1, 2), Point(1, 0), "tribord"),
-        _Coordinate(Point(2, 2), Point(0, 0), "tribord"),
-        _Coordinate(Point(2, 1), Point(0, 1), "tribord"),
-        _Coordinate(Point(2, 0), Point(0, 2), ""),
+        _Coordinate(Point(3, 0), Point(1, 2), ""),
+        _Coordinate(Point(2, 0), Point(2, 2), "babord"),
+        _Coordinate(Point(1, 0), Point(3, 2), "babord"),
+        _Coordinate(Point(1, 1), Point(3, 1), "babord"),
+        _Coordinate(Point(1, 2), Point(3, 0), ""),
+        _Coordinate(Point(2, 2), Point(2, 0), "tribord"),
+        _Coordinate(Point(3, 2), Point(1, 0), "tribord"),
+        _Coordinate(Point(3, 1), Point(1, 1), "tribord"),
+        _Coordinate(Point(3, 0), Point(1, 2), ""),
     ]
 
     def __init__(self) -> None:
@@ -44,6 +48,15 @@ class TDrone(Canvas, Anim):
         self._blink_time = time.time()
         self._blink_on = True
         self._speed = 0.1
+
+    # ########################################################################
+    # ###################################################### SET POSITION ####
+    def set_position(self, point: Point) -> None:
+
+        self.styles.offset = (
+            point.visual.x - (TDrone.WIDTH // 2),
+            point.visual.y - (TDrone.HEIGHT),
+        )
 
     # ########################################################################
     # ############################################################## TURN ####
@@ -95,4 +108,4 @@ class TDrone(Canvas, Anim):
     # ######################################################## UP COLOURS ####
     def up_colours(self) -> None:
         self.clear(FTheme.background)
-        self.set_pixel(1, 1, FTheme.primary)
+        self.set_pixel(1, 2, FTheme.primary)
