@@ -39,8 +39,6 @@ TDrone {
 # ############################################ HUB ####
 THub {
 	position: absolute;
-	border: round $accent;
-	# layer: below;
 }
 
 #hub_layout {

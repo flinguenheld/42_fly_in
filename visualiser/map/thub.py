@@ -26,8 +26,17 @@ class THub(Static):
             hub.point.visual.y - 5,
         )
 
-        self.styles.color = FTheme.get_regular(self._hub._color)
-        self.styles.border = ("double", FTheme.get_regular(self._hub._color))
+        self.styles.color = FTheme.get_regular(self._hub.color)
+        if self._hub.type == Hub.Type.REGULAR:
+            self.styles.border = (
+                "round",
+                FTheme.get_regular(self._hub.color),
+            )
+        else:
+            self.styles.border = (
+                "outer",
+                FTheme.get_regular(self._hub.color),
+            )
 
         self._tcurrent = Label("Ⓒ  0", classes="hub_info")
 
@@ -43,7 +52,7 @@ class THub(Static):
     # ########################################################################
     # ######################################################## GET LETTER ####
     def _get_letter(self) -> str:
-        match self._hub._zone:
+        match self._hub.zone:
             case Hub.Zone.NORMAL:
                 return "⡷⣸ ⡇\n⠇⠹ ⠧⠤"
             case Hub.Zone.BLOCKED:
@@ -56,16 +65,16 @@ class THub(Static):
     # ########################################################################
     # #################################################### GET MAX DRONES ####
     def _get_max(self) -> str:
-        if self._hub._max_drones <= 0:
+        if self._hub.max_drones <= 0:
             return "Ⓜ  ∞"
         else:
-            return f"Ⓜ {self._hub._max_drones:2}"
+            return f"Ⓜ {self._hub.max_drones:2}"
 
     # ########################################################################
     # ########################################################## GET NAME ####
     def _get_name(self) -> str:
 
-        name = self._hub.name
+        name = self._hub._name
 
         if "_" in name:
             return name.replace("_", "\n", count=1)

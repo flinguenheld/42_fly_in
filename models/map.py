@@ -60,8 +60,8 @@ class Map:
 
         Raise ErrorFlyIn if name or point already exist in the map
         """
-        if any(h.name == hub.name for h in self._hubs):
-            raise ErrorFlyIn(f"{hub.name} already exists in the map.")
+        if any(h._name == hub._name for h in self._hubs):
+            raise ErrorFlyIn(f"{hub._name} already exists in the map.")
 
         if any(h.point == hub.point for h in self._hubs):
             raise ErrorFlyIn(f"There is already a hub at {hub.point}.")
@@ -82,8 +82,8 @@ class Map:
 
         Raise ErrorFlyIn to or from hubs are not found in the hub list
         """
-        hub_from = next((h for h in self._hubs if h.name == from_name), None)
-        hub_to = next((h for h in self._hubs if h.name == to_name), None)
+        hub_from = next((h for h in self._hubs if h._name == from_name), None)
+        hub_to = next((h for h in self._hubs if h._name == to_name), None)
 
         if from_name == to_name:
             raise ErrorFlyIn(f"Cannot connect hub '{to_name}' with itself.")

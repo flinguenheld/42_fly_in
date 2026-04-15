@@ -28,6 +28,7 @@ class Hub:
         RESTRICTED = 3
 
         @staticmethod
+        @ErrorFlyIn.spread("Hub zone type parsing")
         def from_txt(text: str) -> Hub.Zone:
             match text.upper():
                 case "NORMAL":
@@ -39,7 +40,7 @@ class Hub:
                 case "RESTRICTED":
                     return Hub.Zone.RESTRICTED
                 case _:
-                    raise ErrorFlyIn(f"Invalid zone value '{text}'.")
+                    raise ErrorFlyIn(f"Invalid value '{text}'.")
 
     # ########################################################################
     def __init__(
@@ -51,14 +52,13 @@ class Hub:
         color: str = "white",
         max_drones: int = 0,
     ):
-        # TODO: Keep private or not ??????
-        self.name = name
-        self._point: Point = point
-        self._type: Hub.Type = type
+        self._name = name
+        self.point: Point = point
+        self.type: Hub.Type = type
+        self.zone = zone
+        self.color = color
+        self.max_drones = max_drones
         self._next_nodes: Set[Hub] = set()
-        self._zone = zone
-        self._color = color
-        self._max_drones = max_drones
 
     # ########################################################################
     # ############################################################## NEXT ####
@@ -77,20 +77,11 @@ class Hub:
         return self._name
 
     @name.setter
+    @ErrorFlyIn.spread("Hub name")
     def name(self, txt: str) -> None:
         if "-" in txt:
             raise ErrorFlyIn(f"Dashes are forbidden in hub name ({txt}).")
         self._name = txt
-
-    # ########################################################################
-    # ###################################################### POINT / TYPE ####
-    @property
-    def point(self) -> Point:
-        return self._point
-
-    @property
-    def type(self) -> Hub.Type:
-        return self._type
 
     # ########################################################################
     # ############################################################### STR ####
@@ -103,7 +94,7 @@ class Hub:
             case Hub.Type.END:
                 title = "Hub (end):"
 
-        return f"{title} '{self._name}' {self._point} '{self._next_nodes}'"
+        return f"{title} '{self._name}' {self.point} '{self._next_nodes}'"
 
     # ########################################################################
     # ############################################################# PARSE ####
