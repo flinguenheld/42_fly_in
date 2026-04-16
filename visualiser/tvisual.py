@@ -39,7 +39,6 @@ class TVisual(App):
         super().__init__()
 
         self._title = TTitleMain()
-        self._parser = FileParser()
 
         self._map: Map | None = None
         self._tmap: TMap | None = None
@@ -83,7 +82,6 @@ class TVisual(App):
         if self._tmap:
             self._tmap.remove()
 
-        # TODO: Add some test ??
         self._map = map
 
     # ################################################ TESTS #################
@@ -104,14 +102,15 @@ class TVisual(App):
 
         if file_path:
             try:
-                self._parser.new_file(file_path)
-                self._parser.parse_file()
-                map = self._parser.map
-                if map:
-                    self.new_map(map)
+                parser = FileParser(file_path)
+                parser.parse_file()
 
-                # self.push_screen(TMessageSuccess(str(self._parser)))
-                await self.push_screen_wait(TMessageSuccess(str(self._parser)))
+                new_map = parser.new_map
+                new_map.is_valid()
+
+                self.new_map(new_map)
+
+                await self.push_screen_wait(TMessageSuccess(str(parser)))
 
             except ErrorFlyIn as ef:
                 await self.push_screen_wait(

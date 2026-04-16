@@ -1,8 +1,8 @@
 from __future__ import annotations
-import sys
-
-import os
+from dataclasses import dataclass
 from typing import List, Iterator
+import sys
+import os
 
 from models.map import Map
 from models.hub import Hub
@@ -11,40 +11,29 @@ from parser.fields import Fields
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░▀█▀░█░░░█▀▀░░░█▀█░█▀█░█▀▄░█▀▀░█▀▀░█▀▄
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░░█░░█░░░█▀▀░░░█▀▀░█▀█░█▀▄░▀▀█░█▀▀░█▀▄
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀▀▀░▀▀▀░▀▀▀░░░▀░░░▀░▀░▀░▀░▀▀▀░▀▀▀░▀░▀
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░▀█▀░█░░░█▀▀░░░█▀█░█▀█░█▀▄░█▀▀░█▀▀░█▀▄░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░░█░░█░░░█▀▀░░░█▀▀░█▀█░█▀▄░▀▀█░█▀▀░█▀▄░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░░▀▀▀░▀▀▀░▀▀▀░░░▀░░░▀░▀░▀░▀░▀▀▀░▀▀▀░▀░▀░░
+@dataclass
 class FileParser:
-    def __init__(self) -> None:
-        self._path: str = ""
-        self._new_map = Map()
+    path: str
 
     # ########################################################################
-    # ########################################################## NEW FILE ####
-    @ErrorFlyIn.spread(title="Parsing file")
-    def new_file(self, path: str) -> None:
-        if not os.path.isfile(path):
+    # ############################################################## INIT ####
+    @ErrorFlyIn.spread(title="Parsing creation")
+    def __post_init__(self) -> None:
+        if not os.path.isfile(self.path):
             self._raise_errorfile("File does not exist.")
 
-        self._path = path
-        self._new_map = Map(os.path.basename(path))
-
-    # ########################################################################
-    # ########################################################### GET MAP ####
-    @property
-    def map(self) -> Map | None:
-        if self._new_map:
-            # TODO: ADD SOME CHECKS ????
-            return self._new_map
-        return None
+        self.new_map = Map(os.path.basename(self.path))
 
     # ########################################################################
     # ######################################################## PARSE FILE ####
     @ErrorFlyIn.spread(title="Parsing file")
     def parse_file(self) -> None:
-        if self._path:
+        if self.path:
             lines: List[Fields] = []
-            with open(self._path, "r") as file:
+            with open(self.path, "r") as file:
                 for line in file.readlines():
                     line = line.strip()
                     if not line or line.startswith("#"):
@@ -75,7 +64,7 @@ class FileParser:
         nb = first_line.get("1")
 
         try:
-            self._new_map.nb_drones = int(nb)
+            self.new_map.nb_drones = int(nb)
         except ValueError:
             self._raise_errorfile("Invalid drone number.", first_line.line)
 
@@ -85,13 +74,10 @@ class FileParser:
     def _parse_hubs(self, lines: Iterator[Fields]) -> None:
         for field in lines:
             try:
-                self._new_map += Hub.parse(field)
+                self.new_map += Hub.parse(field)
 
             except ErrorFlyIn as e:
-                raise e + {"file": self._path, "line": field.line}
-
-        if not self._new_map.hubs:
-            self._raise_errorfile("No hub found.")
+                raise e + {"file": self.path, "line": field.line}
 
     # ########################################################################
     # ####################################################### CONNECTIONS ####
@@ -103,29 +89,28 @@ class FileParser:
 
             hub_from, hub_to = field.get("1", "hubs").split("-", maxsplit=1)
             try:
-                # Option --
                 if field.has("max_link_capacity"):
                     capacity = int(field.get("max_link_capacity"))
                 else:
                     capacity = sys.maxsize
 
-                self._new_map.connect_hubs(hub_from, hub_to, capacity)
+                self.new_map.connect_hubs(hub_from, hub_to, capacity)
 
             except ValueError:
                 self._raise_errorfile("Invalid option format.", field.line)
 
             except ErrorFlyIn as e:
-                raise e + {"file": self._path, "line": field.line}
+                raise e + {"file": self.path, "line": field.line}
 
     # ########################################################################
     # ############################################################### STR ####
     def __str__(self) -> str:
-        return f"Values parsed:\n{self._new_map}"
+        return f"Values parsed:\n{self.new_map}"
 
     # ########################################################################
     # ##################################### RAISE ERROR WITH FILE CONTEXT ####
     def _raise_errorfile(self, text: str, line: str | None = None) -> None:
         if line:
-            raise ErrorFlyIn(text, file=self._path, line=line)
+            raise ErrorFlyIn(text, file=self.path, line=line)
         else:
-            raise ErrorFlyIn(text, file=self._path)
+            raise ErrorFlyIn(text, file=self.path)

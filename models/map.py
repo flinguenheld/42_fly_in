@@ -1,84 +1,85 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from models.hub import Hub
 from error import ErrorFlyIn
-from typing import List, Iterator, Tuple, Dict, Set
+from typing import Dict, Set, Any, Callable, Tuple, Iterator, KeysView
 
 
-@dataclass
+@dataclass(frozen=True, unsafe_hash=True)
 class Connection:
-    hub_to: Hub
-    restriction: int
+    hub_to: Hub = field(hash=True)
+    restriction: int = field(hash=True)
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▄█░█▀█░█▀█░░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░█░█▀█░█▀▀░░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░▀░▀░▀░▀░░░░
+@dataclass
 class Map:
-    def __init__(self, name: str = "No name") -> None:
-        self._name: str = name
-        self._nb_drones: int = 0
-        self._hubs: List[Hub] = []
-        self._graph: Dict[Hub, Set[Connection]] = {}
+    name: str
+    nb_drones: int = 1
+    graph: Dict[Hub, Set[Connection]] = field(default_factory=dict)
+
+    # ########################################################################
+    # ######################################################## VALIDATION ####
+    @ErrorFlyIn.spread(title="Map validation")
+    def is_valid(self) -> None:
+        if self.nb_drones < 1:
+            raise ErrorFlyIn("Nb drones cannot be less than 1")
+
+        if self.start is None:
+            raise ErrorFlyIn("Map needs at least one starting hub")
+
+        if self.end is None:
+            raise ErrorFlyIn("Map needs at least one ending hub")
 
     # ########################################################################
     # ################################################### GET CONNECTIONS ####
     def get_connections(self) -> Iterator[Tuple[Hub, Hub]]:
-        for hub in self._hubs:
-            for nxt in hub.next_nodes:
-                yield (hub, nxt)
-
-    # ################################################ TEST ##################
-    # ################################################ TEST ##################
-    # ################################################ TEST ##################
-    def loop(self, current: Hub | None = None) -> Iterator[Hub]:
-        if not current:
-            current = self.start
-
-        if current:
-            yield current
-            for node in current.next_nodes:
-                yield node
-                yield from self.loop(node)
-
-    # ############################################### START / STOP ####
-    # TODO: CHANGE TO ATTRIBUTES ?
-    @property
-    def start(self) -> Hub | None:
-        return next(h for h in self._hubs if h.type == Hub.Type.START)
-
-    @property
-    def end(self) -> Hub | None:
-        return next(h for h in self._hubs if h.type == Hub.Type.END)
+        for hub, connections in self.graph.items():
+            for connection in connections:
+                yield (hub, connection.hub_to)
 
     # ########################################################################
     # ############################################################## HUBS ####
     @property
-    def hubs(self) -> List[Hub]:
-        return self._hubs
+    def hubs(self) -> KeysView:
+        return self.graph.keys()
+
+    @property
+    def start(self) -> Hub | None:
+        return self._get_hub(lambda h: h.type, Hub.Type.START)
+
+    @property
+    def end(self) -> Hub | None:
+        return self._get_hub(lambda h: h.type, Hub.Type.END)
+
+    # #################################################### GET HUB ####
+    def _get_hub(self, what: Callable, value: Any) -> Hub | None:
+        return next((h for h in self.graph.keys() if what(h) == value), None)
 
     # ######################################################### += ####
     @ErrorFlyIn.spread(title="Add hub in map")
-    def __iadd__(self, hub: Hub) -> Map:
+    def __iadd__(self, new_hub: Hub) -> Map:
         """
         Add the hub inside the graph
 
         Raise ErrorFlyIn if name or point already exist in the map
         """
-        if hub.name in self._graph:
-            raise ErrorFlyIn(f"{hub._name} already exists in the map.")
+        if self._get_hub(lambda h: h.name, new_hub.name):
+            raise ErrorFlyIn(f"{new_hub.name} already exists in the map.")
 
-        if any(h.point == hub.point for h in self._graph.keys()):
-            raise ErrorFlyIn(f"There is already a hub at {hub.point}.")
+        if self._get_hub(lambda h: h.point, new_hub.point):
+            raise ErrorFlyIn(f"There is already a hub at {new_hub.point}.")
 
-        if hub.type != Hub.Type.REGULAR and any(
-            h.type == hub.type for h in self._graph.keys()
+        if new_hub.type != Hub.Type.REGULAR and any(
+            h.type == new_hub.type for h in self.graph.keys()
         ):
-            raise ErrorFlyIn(f"There is already a {hub.type} in the map.")
+            raise ErrorFlyIn(f"There is already a {new_hub.type} in the map.")
 
-        self._graph[hub] = set()
+        self.graph[new_hub] = set()
         return self
 
     # #################################################### CONNECT ####
@@ -87,76 +88,30 @@ class Map:
         self, from_name: str, to_name: str, max_link_capacity: int
     ) -> None:
 
-        hub_from = next(
-            (h for h in self._graph.keys() if h._name == from_name), None
-        )
-        hub_to = next(
-            (h for h in self._graph.keys() if h._name == to_name), None
-        )
-
         if from_name == to_name:
             raise ErrorFlyIn(f"Cannot connect hub '{to_name}' with itself.")
-
-        if not hub_from:
-            raise ErrorFlyIn(f"Hub '{from_name}' doesn't exist in the map.")
-
-        if not hub_to:
-            raise ErrorFlyIn(f"Hub '{to_name}' doesn't exist in the map.")
 
         if max_link_capacity < 1:
             raise ErrorFlyIn("Max link capacity has to be at least 1.")
 
-        self._graph[hub_from].add(Connection(hub_to, max_link_capacity))
+        hub_from = self._get_hub(lambda h: h.name, from_name)
+        hub_to = self._get_hub(lambda h: h.name, to_name)
 
-    # ########################################################################
-    # ######################################################### NB DRONES ####
-    @property
-    def nb_drones(self) -> int:
-        return self._nb_drones
+        # raise ErrorFlyIn(f"{from_name}->{self.graph}")
 
-    # TODO: WHAT IS THAT - CHECK IS ALREADY DONE BELOW ????
-    @nb_drones.setter
-    @ErrorFlyIn.spread(title="Number of drones")
-    def nb_drones(self, nb: int) -> None:
-        if nb < 1:
-            raise ErrorFlyIn("Nb drones cannot be less than 1")
+        if hub_from is None:
+            raise ErrorFlyIn(f"Hub '{from_name}' doesn't exist in the map.")
 
-        self._nb_drones = nb
+        if hub_to is None:
+            raise ErrorFlyIn(f"Hub '{to_name}' doesn't exist in the map.")
 
-    # ########################################################################
-    # ############################################################# VALID ####
-    @property
-    @ErrorFlyIn.spread(title="Map validation")
-    def is_valid(self) -> bool:
-        """
-        Perform tests and raise an ErrorMap on any invalid one
-        Return True
-        """
-
-        if self._nb_drones < 2:
-            raise ErrorFlyIn("Map needs at least two drones")
-
-        if not any(h.point == Hub.Type.START for h in self._hubs):
-            raise ErrorFlyIn("Map needs at least one starting hub")
-
-        if not any(h.point == Hub.Type.END for h in self._hubs):
-            raise ErrorFlyIn("Map needs at least one ending hub")
-
-        if not any(h.point == Hub.Type.REGULAR for h in self._hubs):
-            raise ErrorFlyIn("Map needs at least one REGULAR hub")
-
-        return True
-
-    # TODO: TEST THE GRAPH LOGIC - ARE ALL HUBS CONNECTED ??
-    def test_hubs(self) -> bool:
-        return True
+        self.graph[hub_from].add(Connection(hub_to, max_link_capacity))
 
     # ########################################################################
     # ############################################################### STR ####
     def __str__(self) -> str:
         return (
-            f"Map: {self._name}\n"
-            f"Nb drones: {self.nb_drones}\n"
-            f"Hubs ({len(self._hubs)}):\n"
-            f"{'\n'.join((str(h) for h in self._hubs))}"
+            f"Map: {self.name}\nNb drones: {self.nb_drones}\n"
+            # f"Hubs ({len(self._hubs)}):\n"
+            # f"{'\n'.join((str(h) for h in self._hubs))}"
         )

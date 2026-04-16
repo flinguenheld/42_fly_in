@@ -74,7 +74,7 @@ class THub(Static):
     # ########################################################## GET NAME ####
     def _get_name(self) -> str:
 
-        name = self._hub._name
+        name = self._hub.name
 
         if "_" in name:
             return name.replace("_", "\n", count=1)

@@ -1,7 +1,6 @@
 from __future__ import annotations
-
+from dataclasses import dataclass
 from enum import Enum
-from typing import Set
 
 from point import Point
 from error import ErrorFlyIn
@@ -13,12 +12,28 @@ from visualiser.ftheme import FTheme
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░█░█░█░█▀▄░░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀█░█░█░█▀▄░░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░▀░▀▀▀░▀▀░░░
+
+
+@dataclass(frozen=True, unsafe_hash=True)
 class Hub:
     # ############################################################## TYPE ####
     class Type(Enum):
         REGULAR = 0
         START = 1
         END = 2
+
+        @staticmethod
+        @ErrorFlyIn.spread("Hub type parsing")
+        def from_txt(text: str) -> Hub.Type:
+            match text.upper():
+                case "START_HUB:":
+                    return Hub.Type.START
+                case "END_HUB:":
+                    return Hub.Type.END
+                case "HUB:":
+                    return Hub.Type.REGULAR
+                case _:
+                    raise ErrorFlyIn(f"Invalid value '{text}'.")
 
     # ############################################################## ZONE ####
     class Zone(Enum):
@@ -28,7 +43,7 @@ class Hub:
         RESTRICTED = 3
 
         @staticmethod
-        @ErrorFlyIn.spread("Hub zone type parsing")
+        @ErrorFlyIn.spread("Hub zone parsing")
         def from_txt(text: str) -> Hub.Zone:
             match text.upper():
                 case "NORMAL":
@@ -42,46 +57,55 @@ class Hub:
                 case _:
                     raise ErrorFlyIn(f"Invalid value '{text}'.")
 
-    # ########################################################################
-    def __init__(
-        self,
-        name: str,
-        point: Point,
-        type: Hub.Type = Type.REGULAR,
-        zone: Zone = Zone.NORMAL,
-        color: str = "white",
-        max_drones: int = 0,
-    ):
-        self._name = name
-        self.point: Point = point
-        self.type: Hub.Type = type
-        self.zone = zone
-        self.color = color
-        self.max_drones = max_drones
-        self._next_nodes: Set[Hub] = set()
+    name: str
+    point: Point
+    max_drones: int = 0
+    color: str = "white"
+    zone: Zone = Zone.NORMAL
+    type: Hub.Type = Type.REGULAR
 
     # ########################################################################
-    # ############################################################## NEXT ####
-    @property
-    def next_nodes(self) -> Set[Hub]:
-        return self._next_nodes
-
-    def __iadd__(self, other: Hub) -> Hub:
-        self._next_nodes.add(other)
-        return self
+    # ############################################################## INIT ####
+    @ErrorFlyIn.spread("Hub creation")
+    def __post_init__(self) -> None:
+        if len(self.name) < 3:
+            raise ErrorFlyIn("Name cannot have less than three letters.")
+        if self.max_drones < 0:
+            raise ErrorFlyIn("Max drones value cannot be less than 0.")
 
     # ########################################################################
-    # ############################################################## NAME ####
-    @property
-    def name(self) -> str:
-        return self._name
+    # ############################################################# PARSE ####
+    @staticmethod
+    @ErrorFlyIn.spread("Hub parsing")
+    def parse(fd: Fields) -> Hub:
+        """
+        Create a Hub according to the given text.
+        Raise ErrorFlyIn
 
-    @name.setter
-    @ErrorFlyIn.spread("Hub name")
-    def name(self, txt: str) -> None:
-        if "-" in txt:
-            raise ErrorFlyIn(f"Dashes are forbidden in hub name ({txt}).")
-        self._name = txt
+        format: 'hub: roof1 3 4 [zone=restricted color=red]'
+        """
+
+        # Starting line --
+        type = Hub.Type.from_txt(fd.header)
+
+        name = fd.get("1", "Hub name")
+        point = Point.parse(x=fd.get("2", "X"), y=fd.get("3", "Y"))
+
+        zone = fd.get("zone") if fd.has("zone") else "normal"
+        color = fd.get("color") if fd.has("color") else "white"
+        max_drones = fd.get("max_drones") if fd.has("max_drones") else "0"
+
+        # Adapt options --
+        color = FTheme._clean_color(color)
+        if not FTheme.has_regular(color):
+            raise ErrorFlyIn(f"Invalid color.\n{FTheme.colour_list()}")
+
+        try:
+            max = int(max_drones)
+        except ValueError:
+            raise ErrorFlyIn("Invalid 'max_drones' option.")
+
+        return Hub(name, point, max, color, Hub.Zone.from_txt(zone), type)
 
     # ########################################################################
     # ############################################################### STR ####
@@ -94,51 +118,4 @@ class Hub:
             case Hub.Type.END:
                 title = "Hub (end):"
 
-        return f"{title} '{self._name}' {self.point} '{self._next_nodes}'"
-
-    # ########################################################################
-    # ############################################################# PARSE ####
-    @staticmethod
-    @ErrorFlyIn.spread("Hub parsing")
-    def parse(field: Fields) -> Hub:
-        """
-        Create a Hub according to the given text.
-        Raise ErrorFlyIn
-
-        format: 'hub: roof1 3 4 [zone=restricted color=red]'
-        """
-
-        # Starting line --
-        match field.header:
-            case "start_hub:":
-                type = Hub.Type.START
-            case "end_hub:":
-                type = Hub.Type.END
-            case "hub:":
-                type = Hub.Type.REGULAR
-            case _:
-                raise ErrorFlyIn(
-                    "Line does not start with 'hub'.", line=field.line
-                )
-
-        name = field.get("1", "Hub name")
-        point = Point.parse(x=field.get("2", "X"), y=field.get("3", "Y"))
-
-        zone = field.get("zone") if field.has("zone") else "normal"
-        color = field.get("color") if field.has("color") else "white"
-        max_dr = field.get("max_drones") if field.has("max_drones") else "1"
-
-        # Adapt options --
-        color = FTheme._clean_color(color)
-        if not FTheme.has_regular(color):
-            raise ErrorFlyIn(
-                f"Invalid color option. Allowed:\n{FTheme.colour_list()}",
-                line=field.line,
-            )
-
-        try:
-            max_d = int(max_dr)
-        except ValueError:
-            raise ErrorFlyIn("Invalid 'max_drones' option", line=field.line)
-
-        return Hub(name, point, type, Hub.Zone.from_txt(zone), color, max_d)
+        return f"{title} '{self.name}' {self.point}"

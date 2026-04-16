@@ -62,11 +62,11 @@ class TMap(Widget, Anim):
 
         if self._canvas:
             for hub_from, hub_to in self._map.get_connections():
-                if hub_from._name not in done:
+                if hub_from.name not in done:
                     self.mount(THub(hub_from))
                     done.append(hub_from.name)
 
-                if hub_to._name not in done:
+                if hub_to.name not in done:
                     self.mount(THub(hub_to))
                     done.append(hub_to.name)
 
