@@ -1,8 +1,15 @@
 from __future__ import annotations
+from dataclasses import dataclass
 
 from models.hub import Hub
 from error import ErrorFlyIn
-from typing import List, Iterator, Tuple
+from typing import List, Iterator, Tuple, Dict, Set
+
+
+@dataclass
+class Connection:
+    hub_to: Hub
+    restriction: int
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -14,10 +21,10 @@ class Map:
         self._name: str = name
         self._nb_drones: int = 0
         self._hubs: List[Hub] = []
+        self._graph: Dict[Hub, Set[Connection]] = {}
 
     # ########################################################################
     # ################################################### GET CONNECTIONS ####
-
     def get_connections(self) -> Iterator[Tuple[Hub, Hub]]:
         for hub in self._hubs:
             for nxt in hub.next_nodes:
@@ -56,34 +63,36 @@ class Map:
     @ErrorFlyIn.spread(title="Add hub in map")
     def __iadd__(self, hub: Hub) -> Map:
         """
-        Add the hub inside the map
+        Add the hub inside the graph
 
         Raise ErrorFlyIn if name or point already exist in the map
         """
-        if any(h._name == hub._name for h in self._hubs):
+        if hub.name in self._graph:
             raise ErrorFlyIn(f"{hub._name} already exists in the map.")
 
-        if any(h.point == hub.point for h in self._hubs):
+        if any(h.point == hub.point for h in self._graph.keys()):
             raise ErrorFlyIn(f"There is already a hub at {hub.point}.")
 
         if hub.type != Hub.Type.REGULAR and any(
-            h.type == hub.type for h in self._hubs
+            h.type == hub.type for h in self._graph.keys()
         ):
             raise ErrorFlyIn(f"There is already a {hub.type} in the map.")
 
-        self._hubs.append(hub)
+        self._graph[hub] = set()
         return self
 
     # #################################################### CONNECT ####
     @ErrorFlyIn.spread(title="Connect two hubs")
-    def connect_hubs(self, from_name: str, to_name: str) -> None:
-        """
-        Add 'to' to 'from'
+    def connect_hubs(
+        self, from_name: str, to_name: str, max_link_capacity: int
+    ) -> None:
 
-        Raise ErrorFlyIn to or from hubs are not found in the hub list
-        """
-        hub_from = next((h for h in self._hubs if h._name == from_name), None)
-        hub_to = next((h for h in self._hubs if h._name == to_name), None)
+        hub_from = next(
+            (h for h in self._graph.keys() if h._name == from_name), None
+        )
+        hub_to = next(
+            (h for h in self._graph.keys() if h._name == to_name), None
+        )
 
         if from_name == to_name:
             raise ErrorFlyIn(f"Cannot connect hub '{to_name}' with itself.")
@@ -92,9 +101,12 @@ class Map:
             raise ErrorFlyIn(f"Hub '{from_name}' doesn't exist in the map.")
 
         if not hub_to:
-            raise ErrorFlyIn(f"Hub: '{to_name}' doesn't exist in the map.")
+            raise ErrorFlyIn(f"Hub '{to_name}' doesn't exist in the map.")
 
-        hub_from += hub_to
+        if max_link_capacity < 1:
+            raise ErrorFlyIn("Max link capacity has to be at least 1.")
+
+        self._graph[hub_from].add(Connection(hub_to, max_link_capacity))
 
     # ########################################################################
     # ######################################################### NB DRONES ####

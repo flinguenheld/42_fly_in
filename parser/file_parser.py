@@ -1,4 +1,5 @@
 from __future__ import annotations
+import sys
 
 import os
 from typing import List, Iterator
@@ -80,7 +81,7 @@ class FileParser:
 
     # ########################################################################
     # ############################################################## HUBS ####
-    @ErrorFlyIn.spread(title="Hub parsing")
+    @ErrorFlyIn.spread(title="Parsing all hubs")
     def _parse_hubs(self, lines: Iterator[Fields]) -> None:
         for field in lines:
             try:
@@ -102,14 +103,19 @@ class FileParser:
 
             hub_from, hub_to = field.get("1", "hubs").split("-", maxsplit=1)
             try:
-                self._new_map.connect_hubs(hub_from, hub_to)
+                # Option --
+                if field.has("max_link_capacity"):
+                    capacity = int(field.get("max_link_capacity"))
+                else:
+                    capacity = sys.maxsize
+
+                self._new_map.connect_hubs(hub_from, hub_to, capacity)
+
+            except ValueError:
+                self._raise_errorfile("Invalid option format.", field.line)
+
             except ErrorFlyIn as e:
                 raise e + {"file": self._path, "line": field.line}
-
-            # Option --
-            # TODO: ADD THE OPTION IN THE MAP ---
-            if field.has("max_link_capacity"):
-                pass
 
     # ########################################################################
     # ############################################################### STR ####

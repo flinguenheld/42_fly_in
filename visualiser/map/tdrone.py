@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import time
 import random
 import asyncio
@@ -11,13 +12,13 @@ from visualiser.animation import Anim
 from textual_canvas import Canvas
 
 
+@dataclass
 class _Coordinate:
     """Local class only used to draw with animation"""
 
-    def __init__(self, left: Point, right: Point, light: str) -> None:
-        self.left = left
-        self.right = right
-        self.light = light
+    left: Point
+    right: Point
+    light: str = ""
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -29,15 +30,15 @@ class TDrone(Canvas, Anim):
     HEIGHT = 4
 
     _points = [
-        _Coordinate(Point(3, 0), Point(1, 2), ""),
+        _Coordinate(Point(3, 0), Point(1, 2)),
         _Coordinate(Point(2, 0), Point(2, 2), "babord"),
         _Coordinate(Point(1, 0), Point(3, 2), "babord"),
         _Coordinate(Point(1, 1), Point(3, 1), "babord"),
-        _Coordinate(Point(1, 2), Point(3, 0), ""),
+        _Coordinate(Point(1, 2), Point(3, 0)),
         _Coordinate(Point(2, 2), Point(2, 0), "tribord"),
         _Coordinate(Point(3, 2), Point(1, 0), "tribord"),
         _Coordinate(Point(3, 1), Point(1, 1), "tribord"),
-        _Coordinate(Point(3, 0), Point(1, 2), ""),
+        _Coordinate(Point(3, 0), Point(1, 2)),
     ]
 
     def __init__(self) -> None:
