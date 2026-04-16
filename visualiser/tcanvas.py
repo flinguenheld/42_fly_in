@@ -1,3 +1,4 @@
+from visualiser.ftheme import FTheme
 from point import Point
 
 from textual.color import Color
@@ -9,8 +10,6 @@ from textual_canvas import Canvas
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░█░░░█▀█░█░█░▀▄▀░█▀█░▀▀█░░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░░▀▀▀░▀░▀░▀░▀░░▀░░▀░▀░▀▀▀░░
 class TCanvas(Canvas):
-    _RADIUS: int = 2
-
     def __init__(self, rows: int, cols: int) -> None:
 
         if cols > 0:
@@ -29,15 +28,22 @@ class TCanvas(Canvas):
 
     # ########################################################################
     # ################################################# DRAWING FUNCTIONS ####
-    def draw_adapted_circle(self, center: Point, color: Color) -> None:
-        # TODO: Still usefull ???
-        point = center.canvas
-        super().draw_circle(point.x, point.y, TCanvas._RADIUS, color)
+    def draw_node(self, center: Point, color: Color) -> None:
+        center = center.canvas
+        super().draw_circle(center.x, center.y, 3, FTheme.foreground)
 
-    def draw_adapted_line(
-        self, pt_from: Point, pt_to: Point, color: Color
-    ) -> None:
-        fr = pt_from.canvas
-        to = pt_to.canvas
+    def draw_edge(self, fr: Point, to: Point) -> None:
 
-        super().draw_line(fr.x, fr.y, to.x, to.y, color)
+        fr = fr.canvas
+        to = to.canvas
+
+        super().draw_line(fr.x, fr.y, to.x, to.y, FTheme.foreground)
+
+        # Draw a circle to easily see the destination --
+        distance_row = to.row - fr.row
+        distance_col = to.col - fr.col
+
+        row = to.row - distance_row // 4
+        col = to.col - distance_col // 4
+
+        super().draw_circle(col, row, 2, FTheme.accent)

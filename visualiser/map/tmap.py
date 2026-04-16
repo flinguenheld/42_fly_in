@@ -70,17 +70,11 @@ class TMap(Widget, Anim):
                     self.mount(THub(hub_to))
                     done.append(hub_to.name)
 
-                self._canvas.draw_adapted_circle(
-                    hub_from.point, FTheme.foreground
-                )
+                self._canvas.draw_node(hub_from.point, FTheme.foreground)
                 await asyncio.sleep(0.02)
-                self._canvas.draw_adapted_circle(
-                    hub_to.point, FTheme.foreground
-                )
+                self._canvas.draw_node(hub_to.point, FTheme.foreground)
                 await asyncio.sleep(0.02)
-                self._canvas.draw_adapted_line(
-                    hub_from.point, hub_to.point, FTheme.foreground
-                )
+                self._canvas.draw_edge(hub_from.point, hub_to.point)
                 await asyncio.sleep(0.01)
 
     # ########################################################################
