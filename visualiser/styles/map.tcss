@@ -33,6 +33,7 @@ TDrone {
 	position: absolute;
 	layer: above;
 	# border: round green;
+	display: None;
 }
 
 # #####################################################

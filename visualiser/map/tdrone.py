@@ -1,11 +1,12 @@
-from dataclasses import dataclass
 import time
 import random
 import asyncio
 from typing import override
 from itertools import pairwise
+from dataclasses import dataclass
 
 from point import Point
+from models.map import Drone
 from visualiser.ftheme import FTheme
 from visualiser.animation import Anim
 
@@ -41,7 +42,7 @@ class TDrone(Canvas, Anim):
         _Coordinate(Point(3, 0), Point(1, 2)),
     ]
 
-    def __init__(self) -> None:
+    def __init__(self, drone: Drone) -> None:
         Canvas.__init__(self, 3, 4)
         Anim.__init__(self)
         self.up_colours()
@@ -50,14 +51,29 @@ class TDrone(Canvas, Anim):
         self._blink_on = True
         self._speed = 0.1
 
-    # ########################################################################
-    # ###################################################### SET POSITION ####
-    def set_position(self, point: Point) -> None:
+        self._drone = drone
+        self.styles.offset = (random.randint(-5, 40), random.randint(-5, 40))
 
-        self.styles.offset = (
-            point.visual.x - (TDrone.WIDTH // 2),
-            point.visual.y - (TDrone.HEIGHT),
-        )
+    # ########################################################################
+    # ################################################## CURRENT POSITION ####
+    def _current_offset(self) -> Point:
+        return Point(self.offset.y, self.offset.x)
+
+    # ########################################################################
+    # ############################################################### FLY ####
+    async def fly_to_new_position(self) -> None:
+        self.styles.display = "block"
+
+        # In the drone has moved, fly !
+        if self._drone.where.point != self._current_offset():
+            destination = self._drone.where.point.visual
+
+            for position in self._current_offset().line_points(destination):
+                self.styles.offset = (
+                    position.x - (TDrone.WIDTH // 2),
+                    position.y - (TDrone.HEIGHT),
+                )
+                await asyncio.sleep(0.1)
 
     # ########################################################################
     # ############################################################## TURN ####

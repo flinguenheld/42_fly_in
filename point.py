@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from math import sqrt
 from error import ErrorFlyIn
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Iterator
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -103,3 +103,44 @@ class Point:
             return Point(int(y), int(x))
         except ValueError:
             raise ErrorFlyIn(f"Impossible to convert '({x},{y})'")
+
+    # ########################################################################
+    # #############################################################  ####
+    # def line_points(self, to: Point) -> List[Point]:
+    def line_points(self, to: Point) -> Iterator[Point]:
+
+        x0 = self.col
+        y0 = self.row
+
+        x1 = to.col
+        y1 = to.row
+
+        # Taken from Textual canvas - draw line
+        # pixels: list[tuple[int, int]] = []
+        # add_pixel = pixels.append
+
+        dx = abs(x1 - x0)
+        sx = 1 if x0 < x1 else -1
+        dy = -abs(y1 - y0)
+        sy = 1 if y0 < y1 else -1
+        err = dx + dy
+
+        while True:
+            # add_pixel(Point(y0, x0))
+            yield Point(y0, x0)
+
+            if x0 == x1 and y0 == y1:
+                break
+            e2 = 2 * err
+            if e2 >= dy:
+                if x0 == x1:
+                    break
+                err += dy
+                x0 += sx
+            if e2 <= dx:
+                if y0 == y1:
+                    break
+                err += dx
+                y0 += sy
+
+        # return pixels

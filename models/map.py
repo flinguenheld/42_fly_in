@@ -1,19 +1,29 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 
+from point import Point
 from models.hub import Hub
+from models.drone import Drone
+
 from error import ErrorFlyIn
-from typing import Dict, Set, Any, Callable, Tuple, Iterator, KeysView
+from typing import Dict, Set, Any, Callable, Tuple, Iterator, KeysView, List
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█▀▄░█▀▀░█▀▀░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█░█░█░█░█▀▀░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀▀▀░▀▀░░▀▀▀░▀▀▀░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█▀▄░█▀▀░█▀▀░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█░█░█░█░█▀▀░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀▀▀░▀▀░░▀▀▀░▀▀▀░░
 @dataclass(frozen=True, unsafe_hash=True)
 class Edge:
     hub_to: Hub = field(hash=True)
     restriction: int = field(hash=True)
+    point: Point = field(hash=True)
+
+    @staticmethod
+    def new(hub_from: Hub, hub_to: Hub, restriction: int) -> Edge:
+        pts = [p for p in hub_from.point.line_points(hub_to.point)]
+
+        return Edge(hub_to, restriction, pts[len(pts) // 2])
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -24,6 +34,7 @@ class Edge:
 class Map:
     name: str
     nb_drones: int = 1
+    drones: List[Drone] = field(default_factory=list)
     graph: Dict[Hub, Set[Edge]] = field(default_factory=dict)
 
     # ########################################################################
@@ -38,6 +49,14 @@ class Map:
 
         if self.end is None:
             raise ErrorFlyIn("Map needs at least one ending hub")
+
+        self.drones = [Drone(self.start) for _ in range(self.nb_drones)]
+
+    # ########################################################################
+    # ######################################################## GET DRONES ####
+    def get_drones(self) -> Iterator[Drone]:
+        for d in self.drones:
+            yield d
 
     # ########################################################################
     # ################################################### GET CONNECTIONS ####
@@ -109,7 +128,7 @@ class Map:
         if hub_to is None:
             raise ErrorFlyIn(f"Hub '{to_name}' doesn't exist in the map.")
 
-        self.graph[hub_from].add(Edge(hub_to, max_link_capacity))
+        self.graph[hub_from].add(Edge.new(hub_from, hub_to, max_link_capacity))
 
     # ########################################################################
     # ############################################################### STR ####

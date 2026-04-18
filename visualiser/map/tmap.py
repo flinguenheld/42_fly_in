@@ -1,8 +1,9 @@
 import asyncio
+from typing import override, Tuple, List
+
 from point import Point
 from models.map import Map
 from models.hub import Hub
-from typing import override, Tuple, List
 
 from textual.widget import Widget
 from textual.app import ComposeResult
@@ -32,26 +33,28 @@ class TMap(Widget, Anim):
         self._up_visual_shift()
 
         # Drones --
-        self._drones: List[TDrone] = [
-            TDrone() for _ in range(self._map.nb_drones)
+        self._tdrones: List[TDrone] = [
+            TDrone(d) for d in self._map.get_drones()
         ]
 
-    async def draw_drones(self) -> None:
-        if self._map.start:
-            for d in self._drones:
-                self.mount(d)
-                d.set_position(self._map.start.point)
-                # d.set_position(Point(2, 2))
+    # ########################################################################
+    # ########################################################### COMPOSE ####
+    async def update_drones(self) -> None:
+        for tdrone in self._tdrones:
+            asyncio.create_task(tdrone.fly_to_new_position())
 
     # ########################################################################
     # ########################################################### COMPOSE ####
     def compose(self) -> ComposeResult:
         yield self._canvas
 
+        for tdrone in self._tdrones:
+            yield tdrone
+
     # ########################################################################
     # ######################################################## UP COLOURS ####
     def up_colours(self) -> None:
-        for d in self._drones:
+        for d in self._tdrones:
             d.up_colours()
 
     # ########################################################################
@@ -81,12 +84,12 @@ class TMap(Widget, Anim):
     # ######################################################## ANIMATIONS ####
     @override
     async def anim_on(self) -> None:
-        for drone in self._drones:
+        for drone in self._tdrones:
             await drone.anim_on()
 
     @override
     async def anim_off(self) -> None:
-        for drone in self._drones:
+        for drone in self._tdrones:
             await drone.anim_off()
 
     # ###################################################################### #
