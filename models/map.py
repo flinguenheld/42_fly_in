@@ -6,8 +6,12 @@ from error import ErrorFlyIn
 from typing import Dict, Set, Any, Callable, Tuple, Iterator, KeysView
 
 
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█▀▄░█▀▀░█▀▀░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█░█░█░█░█▀▀░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀▀▀░▀▀░░▀▀▀░▀▀▀░░
 @dataclass(frozen=True, unsafe_hash=True)
-class Connection:
+class Edge:
     hub_to: Hub = field(hash=True)
     restriction: int = field(hash=True)
 
@@ -20,7 +24,7 @@ class Connection:
 class Map:
     name: str
     nb_drones: int = 1
-    graph: Dict[Hub, Set[Connection]] = field(default_factory=dict)
+    graph: Dict[Hub, Set[Edge]] = field(default_factory=dict)
 
     # ########################################################################
     # ######################################################## VALIDATION ####
@@ -37,10 +41,10 @@ class Map:
 
     # ########################################################################
     # ################################################### GET CONNECTIONS ####
-    def get_connections(self) -> Iterator[Tuple[Hub, Hub]]:
-        for hub, connections in self.graph.items():
-            for connection in connections:
-                yield (hub, connection.hub_to)
+    def get_edges(self) -> Iterator[Tuple[Hub, Hub, int]]:
+        for hub, edges in self.graph.items():
+            for edge in edges:
+                yield (hub, edge.hub_to, edge.restriction)
 
     # ########################################################################
     # ############################################################## HUBS ####
@@ -105,7 +109,7 @@ class Map:
         if hub_to is None:
             raise ErrorFlyIn(f"Hub '{to_name}' doesn't exist in the map.")
 
-        self.graph[hub_from].add(Connection(hub_to, max_link_capacity))
+        self.graph[hub_from].add(Edge(hub_to, max_link_capacity))
 
     # ########################################################################
     # ############################################################### STR ####

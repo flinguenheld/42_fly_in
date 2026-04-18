@@ -1,3 +1,4 @@
+import sys
 from visualiser.ftheme import FTheme
 from point import Point
 
@@ -32,12 +33,15 @@ class TCanvas(Canvas):
         center = center.canvas
         super().draw_circle(center.x, center.y, 3, FTheme.foreground)
 
-    def draw_edge(self, fr: Point, to: Point) -> None:
+    def draw_edge(self, fr: Point, to: Point, restriction: int) -> None:
 
         fr = fr.canvas
         to = to.canvas
 
-        super().draw_line(fr.x, fr.y, to.x, to.y, FTheme.foreground)
+        if restriction == sys.maxsize:
+            super().draw_line(fr.x, fr.y, to.x, to.y, FTheme.foreground)
+        else:
+            super().draw_line(fr.x, fr.y, to.x, to.y, FTheme.warning)
 
         # Draw a circle to easily see the destination --
         distance_row = to.row - fr.row

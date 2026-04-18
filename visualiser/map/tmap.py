@@ -58,23 +58,23 @@ class TMap(Widget, Anim):
     # ######################################################### DRAW HUBS ####
     async def draw_hubs(self) -> None:
 
-        done = list()
+        done = set()
 
         if self._canvas:
-            for hub_from, hub_to in self._map.get_connections():
-                if hub_from.name not in done:
-                    self.mount(THub(hub_from))
-                    done.append(hub_from.name)
+            for hub_fr, hub_to, restriction in self._map.get_edges():
+                if hub_fr not in done:
+                    self.mount(THub(hub_fr))
+                    done.add(hub_fr)
 
-                if hub_to.name not in done:
+                if hub_to not in done:
                     self.mount(THub(hub_to))
-                    done.append(hub_to.name)
+                    done.add(hub_to)
 
-                self._canvas.draw_node(hub_from.point, FTheme.foreground)
+                self._canvas.draw_node(hub_fr.point, FTheme.foreground)
                 await asyncio.sleep(0.02)
                 self._canvas.draw_node(hub_to.point, FTheme.foreground)
                 await asyncio.sleep(0.02)
-                self._canvas.draw_edge(hub_from.point, hub_to.point)
+                self._canvas.draw_edge(hub_fr.point, hub_to.point, restriction)
                 await asyncio.sleep(0.01)
 
     # ########################################################################
