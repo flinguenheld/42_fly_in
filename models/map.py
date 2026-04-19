@@ -1,29 +1,13 @@
 from __future__ import annotations
+from models.edge import Edge
 from dataclasses import dataclass, field
 
+from algo.bfs import BFS
 from models.hub import Hub
-from models.drone import Drone
-from models.point import Point
-
 from error import ErrorFlyIn
+from models.drone import Drone
+
 from typing import Dict, Set, Any, Callable, Tuple, Iterator, KeysView, List
-
-
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█▀▄░█▀▀░█▀▀░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▀░█░█░█░█░█▀▀░░
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀▀▀░▀▀░░▀▀▀░▀▀▀░░
-@dataclass(frozen=True, unsafe_hash=True)
-class Edge:
-    hub_to: Hub = field(hash=True)
-    restriction: int = field(hash=True)
-    point: Point = field(hash=True)
-
-    @staticmethod
-    def new(hub_from: Hub, hub_to: Hub, restriction: int) -> Edge:
-        pts = [p for p in hub_from.point.line_points(hub_to.point)]
-
-        return Edge(hub_to, restriction, pts[len(pts) // 2])
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -36,6 +20,12 @@ class Map:
     nb_drones: int = 1
     drones: List[Drone] = field(default_factory=list)
     graph: Dict[Hub, Set[Edge]] = field(default_factory=dict)
+
+    def test_algo(self) -> Any:
+        if self.start and self.end:
+            algo = BFS(self.graph, self.end)
+            aaaa = algo.run(self.start)
+            return aaaa
 
     # ########################################################################
     # ######################################################## VALIDATION ####

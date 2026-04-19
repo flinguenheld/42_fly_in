@@ -32,6 +32,7 @@ class TVisual(App):
         ("f", "file_selection", "File selection"),
         ("t", "next_theme", "Next theme"),
         ("d", "draw", "draw"),
+        ("a", "algo", "algo test"),
         ("m", "move", "move offset"),
     ]
 
@@ -60,6 +61,21 @@ class TVisual(App):
     async def on_mount(self) -> None:
         self._theme.next()
         self.call_later(self.action_file_selection)
+
+    def action_algo(self) -> None:
+
+        if self._map:
+            value = self._map.test_algo()
+
+            # txt = ""
+            # for k, v in value.items():
+            #     txt += f"{k} -> {v}\n"
+
+            txt = ""
+            for h in value:
+                txt += f"-> {h.name}\n"
+
+            self.app.notify(f"value found: {txt}", markup=False)
 
     # ########################################################################
     # ############################################################# DRAW #####
