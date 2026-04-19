@@ -3,6 +3,7 @@ from models.edge import Edge
 from dataclasses import dataclass, field
 
 from algo.bfs import BFS
+from algo.dijkstra import Dijkstra
 from models.hub import Hub
 from error import ErrorFlyIn
 from models.drone import Drone
@@ -22,8 +23,12 @@ class Map:
     graph: Dict[Hub, Set[Edge]] = field(default_factory=dict)
 
     def test_algo(self) -> Any:
+        # if self.start and self.end:
+        #     algo = BFS(self.graph, self.end)
+        #     aaaa = algo.run(self.start)
+        #     return aaaa
         if self.start and self.end:
-            algo = BFS(self.graph, self.end)
+            algo = Dijkstra(self.graph, self.end)
             aaaa = algo.run(self.start)
             return aaaa
 

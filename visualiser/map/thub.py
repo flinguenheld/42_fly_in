@@ -65,10 +65,10 @@ class THub(Static):
     # ########################################################################
     # #################################################### GET MAX DRONES ####
     def _get_max(self) -> str:
-        # if self._hub.max_drones <= 0:
-        #     return "Ⓜ  ∞"
-        # else:
-        return f"Ⓜ {self._hub.max_drones:2}"
+        if self._hub.type in [Hub.Type.START, Hub.Type.END]:
+            return "Ⓜ  ∞"
+        else:
+            return f"Ⓜ {self._hub.max_drones:2}"
 
     # ########################################################################
     # ########################################################## GET NAME ####

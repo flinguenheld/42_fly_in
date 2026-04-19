@@ -59,7 +59,7 @@ class Hub:
 
     name: str
     point: Point
-    max_drones: int = 0
+    max_drones: int = 1
     color: str = "white"
     zone: Zone = Zone.NORMAL
     type: Hub.Type = Type.REGULAR
@@ -95,7 +95,7 @@ class Hub:
 
         zone = fd.get("zone") if fd.has("zone") else "normal"
         color = fd.get("color") if fd.has("color") else "white"
-        max_drones = fd.get("max_drones") if fd.has("max_drones") else "0"
+        max_drones = fd.get("max_drones") if fd.has("max_drones") else "1"
 
         # Adapt options --
         color = FTheme._clean_color(color)
