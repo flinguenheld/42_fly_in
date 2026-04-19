@@ -1,6 +1,6 @@
 import sys
+from models.point import Point
 from visualiser.ftheme import FTheme
-from point import Point
 
 from textual.color import Color
 from textual_canvas import Canvas

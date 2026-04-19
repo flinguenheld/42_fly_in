@@ -72,13 +72,8 @@ class TVisual(App):
             self._tmap = TMap(self._map)
             self._layout_map.mount(self._tmap)
 
-            # await asyncio.create_task(self._tmap.create_drones())
-
-            # self._tmap.create_drones()
             await asyncio.create_task(self._tmap.draw_hubs())
             await asyncio.create_task(self._tmap.update_drones())
-            # self._tmap.update_drones()
-            # self.app.notify("hollo")
 
     # ########################################################################
     # ########################################################### NEW MAP ####

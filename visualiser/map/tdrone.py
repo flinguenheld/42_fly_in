@@ -5,8 +5,8 @@ from typing import override
 from itertools import pairwise
 from dataclasses import dataclass
 
-from point import Point
 from models.map import Drone
+from models.point import Point
 from visualiser.ftheme import FTheme
 from visualiser.animation import Anim
 
@@ -51,6 +51,7 @@ class TDrone(Canvas, Anim):
         self._blink_on = True
         self._speed = 0.1
 
+        # Associate a model with the visual and init a random position --
         self._drone = drone
         self.styles.offset = (random.randint(-5, 40), random.randint(-5, 40))
 
@@ -62,9 +63,10 @@ class TDrone(Canvas, Anim):
     # ########################################################################
     # ############################################################### FLY ####
     async def fly_to_new_position(self) -> None:
+        """If the drone has moved, fly !"""
+
         self.styles.display = "block"
 
-        # In the drone has moved, fly !
         if self._drone.where.point != self._current_offset():
             destination = self._drone.where.point.visual
 
@@ -73,7 +75,18 @@ class TDrone(Canvas, Anim):
                     position.x - (TDrone.WIDTH // 2),
                     position.y - (TDrone.HEIGHT),
                 )
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.08)
+
+    # ########################################################################
+    # ######################################################## UP COLOURS ####
+    def up_colours(self) -> None:
+        self.clear(FTheme.background)
+        self.set_pixel(1, 2, FTheme.primary)
+
+    # ###########################################################
+    # ###############################################################
+    # ####################################################################
+    # ######################################################### ANIMATION ####
 
     # ########################################################################
     # ############################################################## TURN ####
@@ -120,9 +133,3 @@ class TDrone(Canvas, Anim):
 
         elif time.time() > self._blink_time:
             self._blink_on = True
-
-    # ########################################################################
-    # ######################################################## UP COLOURS ####
-    def up_colours(self) -> None:
-        self.clear(FTheme.background)
-        self.set_pixel(1, 2, FTheme.primary)

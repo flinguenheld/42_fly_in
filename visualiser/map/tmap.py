@@ -1,9 +1,9 @@
 import asyncio
 from typing import override, Tuple, List
 
-from point import Point
 from models.map import Map
 from models.hub import Hub
+from models.point import Point
 
 from textual.widget import Widget
 from textual.app import ComposeResult
@@ -38,7 +38,7 @@ class TMap(Widget, Anim):
         ]
 
     # ########################################################################
-    # ########################################################### COMPOSE ####
+    # ############################################################ DRONES ####
     async def update_drones(self) -> None:
         for tdrone in self._tdrones:
             asyncio.create_task(tdrone.fly_to_new_position())
@@ -73,10 +73,9 @@ class TMap(Widget, Anim):
                     self.mount(THub(hub_to))
                     done.add(hub_to)
 
+                await asyncio.sleep(0.01)
                 self._canvas.draw_node(hub_fr.point, FTheme.foreground)
-                await asyncio.sleep(0.02)
                 self._canvas.draw_node(hub_to.point, FTheme.foreground)
-                await asyncio.sleep(0.02)
                 self._canvas.draw_edge(hub_fr.point, hub_to.point, restriction)
                 await asyncio.sleep(0.01)
 

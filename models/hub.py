@@ -2,8 +2,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
-from point import Point
 from error import ErrorFlyIn
+from models.point import Point
 from parser.fields import Fields
 from visualiser.ftheme import FTheme
 

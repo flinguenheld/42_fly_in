@@ -1,9 +1,9 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 
-from point import Point
 from models.hub import Hub
 from models.drone import Drone
+from models.point import Point
 
 from error import ErrorFlyIn
 from typing import Dict, Set, Any, Callable, Tuple, Iterator, KeysView, List

@@ -105,8 +105,7 @@ class Point:
             raise ErrorFlyIn(f"Impossible to convert '({x},{y})'")
 
     # ########################################################################
-    # #############################################################  ####
-    # def line_points(self, to: Point) -> List[Point]:
+    # ######################################## ALL POINTS FROM SELF TO TO ####
     def line_points(self, to: Point) -> Iterator[Point]:
 
         x0 = self.col
@@ -116,9 +115,6 @@ class Point:
         y1 = to.row
 
         # Taken from Textual canvas - draw line
-        # pixels: list[tuple[int, int]] = []
-        # add_pixel = pixels.append
-
         dx = abs(x1 - x0)
         sx = 1 if x0 < x1 else -1
         dy = -abs(y1 - y0)
@@ -126,7 +122,6 @@ class Point:
         err = dx + dy
 
         while True:
-            # add_pixel(Point(y0, x0))
             yield Point(y0, x0)
 
             if x0 == x1 and y0 == y1:
@@ -142,5 +137,3 @@ class Point:
                     break
                 err += dx
                 y0 += sy
-
-        # return pixels
