@@ -67,14 +67,14 @@ class TVisual(App):
         if self._map:
             value = self._map.test_algo()
 
-            txt = ""
-            for k, v in value.items():
-                for to, cost in v.items():
-                    txt += f"{k.name} -> {to.name} : {cost}\n"
-
             # txt = ""
-            # for h in value:
-            #     txt += f"-> {h.name}\n"
+            # for k, v in value.items():
+            #     # for to, cost in v.items():
+            #     txt += f"{k.name} -> {v}\n"
+
+            txt = ""
+            for h in value:
+                txt += f"-> {h.name}\n"
 
             self.app.notify(f"value found: {txt}", markup=False)
 

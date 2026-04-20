@@ -1,38 +1,78 @@
 import math
+from collections import deque
+from typing import Dict, Set, Deque, List
 
 from models.hub import Hub
 from models.map import Edge
-from typing import Dict, Set
 from dataclasses import dataclass
 
 
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▀▄░▀█▀░▀▀█░█░█░█▀▀░▀█▀░█▀▄░█▀█░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░█░░█░░░░█░█▀▄░▀▀█░░█░░█▀▄░█▀█░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀▀░░▀▀▀░▀▀░░▀░▀░▀▀▀░░▀░░▀░▀░▀░▀░░
 @dataclass
 class Dijkstra:
     graph: Dict[Hub, Set[Edge]]
-    start: Hub
+    end: Hub
 
-    def run(self, start: Hub):
+    def run(self, start: Hub) -> List[Hub]:
 
-        # new_graph = self.create_graph_with_costs()
+        temp: Dict[Hub, float] = self.init_temp_graph(start)
+        done: Set[Hub] = set()
 
-        costs = {h: math.inf for h in self.graph.keys()}
-        parents = {start: start}
+        while True:
+            current = self.get_lowest(temp, done)
+            done.add(current)
 
-    def create_graph_with_costs(self) -> Dict[Hub, Dict[Hub, int]]:
+            if current == self.end:
+                break
 
-        new_graph: Dict[Hub, Dict[Hub, int]] = dict()
+            for edge in self.graph[current]:
+                if edge.hub_to not in done:
+                    cost = temp[current] + edge.hub_to.zone.value
+                    if cost < temp[edge.hub_to]:
+                        temp[edge.hub_to] = cost
 
-        for hub, edges in self.graph.items():
-            destinations = {}
-            for edge in edges:
-                match edge.hub_to.zone:
-                    case Hub.Zone.BLOCKED:
-                        destinations[edge.hub_to] = math.inf
-                    case Hub.Zone.RESTRICTED:
-                        destinations[edge.hub_to] = 2
-                    case _:
-                        destinations[edge.hub_to] = 1
+        return self.get_path(temp, start)
 
-            new_graph[hub] = destinations
+    def get_lowest(self, temp: Dict[Hub, float], done: Set[Hub]) -> Hub:
+        """
+        Get the current less expensive Hub in temp
+        """
 
-        return new_graph
+        return min(
+            (e for e in temp.items() if e[0] not in done),
+            key=lambda pair: pair[1],
+        )[0]
+
+    def init_temp_graph(self, start: Hub) -> Dict[Hub, float]:
+        """
+        Create a dict with all hubs and their 'cost' set to infinite
+        The cost is the smallerst price requiered to reach the hub
+        """
+
+        temp = {hub: math.inf for hub in self.graph.keys()}
+        temp[start] = 0.0
+        return temp
+
+    def get_path(self, temp: Dict[Hub, float], start: Hub) -> List[Hub]:
+        """
+        Run in temp to get the final path
+        """
+
+        # Start form the end
+        path: Deque[Hub] = deque([self.end])
+
+        while path[0] != start:
+            # Get all hub which have the current hub as destination
+            sources: List[Hub] = [
+                h
+                for h, edges in self.graph.items()
+                if any(True for e in edges if path[0] == e.hub_to)
+            ]
+
+            # Then keep the cheapest
+            path.appendleft(min(sources, key=lambda h: temp[h]))
+
+        return [h for h in path]

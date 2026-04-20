@@ -1,4 +1,5 @@
 from __future__ import annotations
+import math
 from dataclasses import dataclass
 from enum import Enum
 
@@ -37,10 +38,10 @@ class Hub:
 
     # ############################################################## ZONE ####
     class Zone(Enum):
-        NORMAL = 0
-        BLOCKED = 1
-        PRIORITY = 2
-        RESTRICTED = 3
+        NORMAL = 2
+        BLOCKED = math.inf
+        PRIORITY = 1.8
+        RESTRICTED = 4
 
         @staticmethod
         @ErrorFlyIn.spread("Hub zone parsing")
