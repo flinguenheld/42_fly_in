@@ -1,5 +1,5 @@
 import asyncio
-from typing import override, Tuple, List
+from typing import override, Tuple, List, Set
 
 from models.map import Map
 from models.hub import Hub
@@ -27,6 +27,7 @@ class TMap(Widget, Anim):
         Anim.__init__(self)
 
         self._map = map
+        self._thubs: List[THub] = []
 
         # Get the size & create canvas --
         self._canvas = TCanvas(*self._get_visual_size())
@@ -47,6 +48,12 @@ class TMap(Widget, Anim):
         for a in to_await:
             await a
 
+        # Update hub counters --
+        for thub in self._thubs:
+            thub.occupied = sum(
+                (1 for d in self._map.drones if d.where == thub._hub)
+            )
+
     # ########################################################################
     # ########################################################### COMPOSE ####
     def compose(self) -> ComposeResult:
@@ -65,17 +72,21 @@ class TMap(Widget, Anim):
     # ######################################################### DRAW HUBS ####
     async def draw_hubs(self) -> None:
 
-        done = set()
-
         if self._canvas:
+
+            def _mount_and_save(new: Hub, done: Set[Hub]) -> None:
+                h = THub(new)
+                done.add(new)
+                self.mount(h)
+                self._thubs.append(h)
+
+            done: Set[Hub] = set()
             for hub_fr, hub_to, restriction in self._map.get_edges():
                 if hub_fr not in done:
-                    self.mount(THub(hub_fr))
-                    done.add(hub_fr)
+                    _mount_and_save(hub_fr, done)
 
                 if hub_to not in done:
-                    self.mount(THub(hub_to))
-                    done.add(hub_to)
+                    _mount_and_save(hub_to, done)
 
                 await asyncio.sleep(0.01)
                 self._canvas.draw_node(hub_fr.point, FTheme.foreground)

@@ -1,3 +1,4 @@
+from textual.reactive import reactive
 from models.hub import Hub
 from visualiser.ftheme import FTheme
 
@@ -14,6 +15,8 @@ class THub(Static):
     WIDTH = 13
     HEIGHT = 7
 
+    occupied = reactive(0)
+
     def __init__(self, hub: Hub):
         Static.__init__(self)
 
@@ -21,10 +24,7 @@ class THub(Static):
 
         self.styles.width = THub.WIDTH
         self.styles.height = THub.HEIGHT
-        self.styles.offset = (
-            hub.point.visual.x - 3,
-            hub.point.visual.y - 5,
-        )
+        self.styles.offset = (hub.point.visual.x - 3, hub.point.visual.y - 5)
 
         self.styles.color = FTheme.get_regular(self._hub.color)
         if self._hub.type == Hub.Type.REGULAR:
@@ -38,7 +38,12 @@ class THub(Static):
                 FTheme.get_regular(self._hub.color),
             )
 
-        self._tcurrent = Label("Ⓒ  0", classes="hub_info")
+        self._toccupied = Label("Ⓒ  0", classes="hub_info")
+
+    # ########################################################################
+    # ############################################### OCCUPIED REACTIVITY ####
+    def watch_occupied(self, old_occupied: int, new_occupied: int) -> None:
+        self._toccupied.update(f"Ⓒ {new_occupied:2}")
 
     # ########################################################################
     # ########################################################### COMPOSE ####
@@ -46,7 +51,7 @@ class THub(Static):
         with Grid(id="hub_layout"):
             yield Label(self._get_letter(), classes="hub_type")
             yield Label(self._get_max(), classes="hub_info")
-            yield self._tcurrent
+            yield self._toccupied
             yield Label(self._get_name(), classes="hub_name")
 
     # ########################################################################
