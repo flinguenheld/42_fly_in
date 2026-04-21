@@ -21,16 +21,18 @@ class Dijkstra:
         temp: Dict[Hub, float] = self.init_temp_graph(start)
         done: Set[Hub] = set()
 
-        while True:
-            current = self.get_lowest(temp, done)
-            done.add(current)
+        # TODO: GET A WAY TO MANAGE ADAPTED GRAPH WITHOUT SOLUTION !!!!
 
-            if current == self.end:
+        while True:
+            current_hub = self.get_lowest(temp, done)
+            done.add(current_hub)
+
+            if current_hub == self.end:
                 break
 
-            for edge in self.graph[current]:
+            for edge in self.graph[current_hub]:
                 if edge.hub_to not in done:
-                    cost = temp[current] + edge.hub_to.zone.value
+                    cost = temp[current_hub] + edge.hub_to.zone.value
                     if cost < temp[edge.hub_to]:
                         temp[edge.hub_to] = cost
 
@@ -49,7 +51,7 @@ class Dijkstra:
     def init_temp_graph(self, start: Hub) -> Dict[Hub, float]:
         """
         Create a dict with all hubs and their 'cost' set to infinite
-        The cost is the smallerst price requiered to reach the hub
+        The cost will be the smallest price requiered to reach the hub
         """
 
         temp = {hub: math.inf for hub in self.graph.keys()}

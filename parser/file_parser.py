@@ -1,7 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Iterator
-import sys
 import os
 
 from models.map import Map
@@ -92,7 +91,7 @@ class FileParser:
                 if field.has("max_link_capacity"):
                     capacity = int(field.get("max_link_capacity"))
                 else:
-                    capacity = sys.maxsize
+                    capacity = 1
 
                 self.new_map.connect_hubs(hub_from, hub_to, capacity)
 

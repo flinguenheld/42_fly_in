@@ -1,4 +1,3 @@
-import sys
 from models.point import Point
 from visualiser.ftheme import FTheme
 
@@ -38,8 +37,8 @@ class TCanvas(Canvas):
         fr = fr.canvas
         to = to.canvas
 
-        if restriction == sys.maxsize:
-            super().draw_line(fr.x, fr.y, to.x, to.y, FTheme.foreground)
+        if restriction == 1:
+            super().draw_line(fr.x, fr.y, to.x, to.y, FTheme.panel)
         else:
             super().draw_line(fr.x, fr.y, to.x, to.y, FTheme.warning)
 
@@ -50,4 +49,4 @@ class TCanvas(Canvas):
         row = to.row - distance_row // 4
         col = to.col - distance_col // 4
 
-        super().draw_circle(col, row, 2, FTheme.accent)
+        super().draw_circle(col, row, 2, FTheme.panel)
