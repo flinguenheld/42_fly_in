@@ -14,7 +14,7 @@ from visualiser.ftheme import FTheme
 from visualiser.map.tmap import TMap
 from visualiser.animation import Anim
 from visualiser.ttitle import TTitleMain
-from visualiser.tmessage import TMessageError, TMessageSuccess
+from visualiser.tmessage import TMessageError
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -29,11 +29,10 @@ class TVisual(App):
         "styles/message.tcss",
     ]
     BINDINGS = [
-        ("f", "file_selection", "File selection"),
         ("t", "next_theme", "Next theme"),
-        ("a", "algo", "algo test"),
-        ("m", "move", "move offset"),
+        ("f", "file_selection", "File selection"),
         ("r", "restart", "restart map"),
+        ("n", "next_turn", "Next turn"),
     ]
 
     def __init__(self) -> None:
@@ -44,8 +43,76 @@ class TVisual(App):
         self._map: Map | None = None
         self._tmap: TMap | None = None
         self._theme = FTheme(self.app)
+        self._file_path: str | None = None
 
         self._layout_map = ScrollableContainer(classes="tmap_layout")
+
+    # ########################################################################
+    # ######################################################### NEXT TURN ####
+    async def action_next_turn(self) -> None:
+
+        if self._map and self._tmap:
+            # for step in self._map.test_algo():
+            step = next(self._map.next_turn(), None)
+            if step:
+                self.app.notify(f"{step} has moved !")
+                # Move and print what happened
+                await self._tmap.update_drones()
+
+    # ########################################################################
+    # ########################################################## RESTART #####
+    async def action_restart(self) -> None:
+        if self._file_path:
+            try:
+                parser = FileParser(self._file_path)
+                parser.parse_file()
+
+                new_map = parser.new_map
+                new_map.is_valid()
+
+                self._map = new_map
+                await self._init_map()
+
+            except ErrorFlyIn as ef:
+                await self.push_screen_wait(
+                    TMessageError(ef.str_with_context())
+                )
+
+            except Exception as e:
+                await self.push_screen_wait(TMessageError(str(e)))
+
+    # #####################################################
+    # ###################################### INIT MAP #####
+    async def _init_map(self) -> None:
+
+        if self._tmap:
+            self._tmap.remove()
+
+        if self._map:
+            self._tmap = TMap(self._map)
+            self._layout_map.mount(self._tmap)
+
+            await asyncio.create_task(self._tmap.draw_hubs())
+            await asyncio.create_task(self._tmap.update_drones())
+
+    # ########################################################################
+    # ###################################################### SELECT FILE #####
+    @work
+    @Anim.toggle_anim
+    async def action_file_selection(self) -> None:
+        new_path = await self.push_screen_wait(TFile())
+        # self._file_path = "./maps/hello.txt"
+
+        if new_path:
+            self._file_path = new_path
+            await self.action_restart()
+
+    # ########################################################################
+    # ########################################################### THEMES #####
+    def action_next_theme(self) -> None:
+        self._theme.next()
+        if self._tmap:
+            self._tmap.up_colours()
 
     # ########################################################################
     # ########################################################### COMPOSE ####
@@ -61,63 +128,3 @@ class TVisual(App):
     async def on_mount(self) -> None:
         self._theme.next()
         self.call_later(self.action_file_selection)
-
-    async def action_algo(self) -> None:
-
-        if self._map and self._tmap:
-            # for step in self._map.test_algo():
-            step = next(self._map.next_turn(), None)
-            if step:
-                self.app.notify(f"{step} has moved !")
-                # Move and print what happened
-                await self._tmap.update_drones()
-
-    # ########################################################################
-    # ########################################################## RESTART #####
-    async def action_restart(self) -> None:
-
-        if self._tmap:
-            self._tmap.remove()
-
-        if self._map:
-            self._tmap = TMap(self._map)
-            self._layout_map.mount(self._tmap)
-
-            await asyncio.create_task(self._tmap.draw_hubs())
-            await asyncio.create_task(self._tmap.update_drones())
-
-    # ################################################ TESTS #################
-    # ################################################ TESTS #################
-    @work
-    @Anim.toggle_anim
-    async def action_file_selection(self) -> None:
-        file_path = await self.push_screen_wait(TFile())
-        # file_path = "./maps/hello.txt"
-
-        if file_path:
-            try:
-                self._map = None
-
-                parser = FileParser(file_path)
-                parser.parse_file()
-
-                new_map = parser.new_map
-                new_map.is_valid()
-
-                self._map = new_map
-                await self.action_restart()
-
-            except ErrorFlyIn as ef:
-                await self.push_screen_wait(
-                    TMessageError(ef.str_with_context())
-                )
-
-            except Exception as e:
-                await self.push_screen_wait(TMessageError(str(e)))
-
-    # ########################################################################
-    # ########################################################### THEMES #####
-    def action_next_theme(self) -> None:
-        self._theme.next()
-        if self._tmap:
-            self._tmap.up_colours()
