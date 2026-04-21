@@ -1,3 +1,5 @@
+from models.edge import Edge
+from models.hub import Hub
 import time
 import random
 import asyncio
@@ -55,10 +57,8 @@ class TDrone(Canvas, Anim):
         self._drone = drone
         self.styles.offset = (random.randint(-5, 40), random.randint(-5, 40))
 
-    # ########################################################################
-    # ################################################## CURRENT POSITION ####
-    def _current_offset(self) -> Point:
-        return Point(self.offset.y, self.offset.x)
+        # Not init for the first fly
+        self._where: Hub | Edge
 
     # ########################################################################
     # ############################################################### FLY ####
@@ -67,15 +67,26 @@ class TDrone(Canvas, Anim):
 
         self.styles.display = "block"
 
-        if self._drone.where.point != self._current_offset():
+        if not hasattr(self, "_where") or self._drone.where != self._where:
             destination = self._drone.where.point.visual
 
+            # Get all points in the line --
             for position in self._current_offset().line_points(destination):
                 self.styles.offset = (
                     position.x - (TDrone.WIDTH // 2),
                     position.y - (TDrone.HEIGHT),
                 )
-                await asyncio.sleep(0.08)
+                await asyncio.sleep(0.04)
+
+            self._where = self._drone.where
+
+    # ########################################################################
+    # #################################################### CURRENT OFFSET ####
+    def _current_offset(self) -> Point:
+        return Point(
+            self.offset.y + (TDrone.HEIGHT),
+            self.offset.x + (TDrone.WIDTH // 2),
+        )
 
     # ########################################################################
     # ######################################################## UP COLOURS ####

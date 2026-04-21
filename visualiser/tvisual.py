@@ -31,9 +31,9 @@ class TVisual(App):
     BINDINGS = [
         ("f", "file_selection", "File selection"),
         ("t", "next_theme", "Next theme"),
-        ("d", "draw", "draw"),
         ("a", "algo", "algo test"),
         ("m", "move", "move offset"),
+        ("r", "restart", "restart map"),
     ]
 
     def __init__(self) -> None:
@@ -62,72 +62,50 @@ class TVisual(App):
         self._theme.next()
         self.call_later(self.action_file_selection)
 
-    def action_algo(self) -> None:
+    async def action_algo(self) -> None:
 
-        if self._map:
-            value = self._map.test_algo()
-
-            # txt = ""
-            # for k, v in value.items():
-            #     # for to, cost in v.items():
-            #     txt += f"{k.name} -> {v}\n"
-
-            txt = ""
-            for h in value:
-                txt += f"-> {h.name}\n"
-
-            self.app.notify(f"value found: {txt}", markup=False)
+        if self._map and self._tmap:
+            # for step in self._map.test_algo():
+            step = next(self._map.next_turn(), None)
+            if step:
+                self.app.notify(f"{step} has moved !")
+                # Move and print what happened
+                await self._tmap.update_drones()
 
     # ########################################################################
-    # ############################################################# DRAW #####
-    async def action_draw(self) -> None:
+    # ########################################################## RESTART #####
+    async def action_restart(self) -> None:
+
+        if self._tmap:
+            self._tmap.remove()
 
         if self._map:
-            if self._tmap:
-                self._tmap.remove()
-
             self._tmap = TMap(self._map)
             self._layout_map.mount(self._tmap)
 
             await asyncio.create_task(self._tmap.draw_hubs())
             await asyncio.create_task(self._tmap.update_drones())
 
-    # ########################################################################
-    # ########################################################### NEW MAP ####
-    def new_map(self, map: Map) -> None:
-
-        if self._tmap:
-            self._tmap.remove()
-
-        self._map = map
-
-    # ################################################ TESTS #################
-    # ################################################ TESTS #################
-    def action_move(self) -> None:
-        pass
-        # if self._tmap:
-        #     self._tmap.move_baby()
-
     # ################################################ TESTS #################
     # ################################################ TESTS #################
     @work
     @Anim.toggle_anim
     async def action_file_selection(self) -> None:
-        self._map = None
-        file_path: str = await self.push_screen_wait(TFile())
+        file_path = await self.push_screen_wait(TFile())
         # file_path = "./maps/hello.txt"
 
         if file_path:
             try:
+                self._map = None
+
                 parser = FileParser(file_path)
                 parser.parse_file()
 
                 new_map = parser.new_map
                 new_map.is_valid()
 
-                self.new_map(new_map)
-
-                await self.push_screen_wait(TMessageSuccess(str(parser)))
+                self._map = new_map
+                await self.action_restart()
 
             except ErrorFlyIn as ef:
                 await self.push_screen_wait(
@@ -135,7 +113,6 @@ class TVisual(App):
                 )
 
             except Exception as e:
-                # self.push_screen(TMessageError(str(e)))
                 await self.push_screen_wait(TMessageError(str(e)))
 
     # ########################################################################

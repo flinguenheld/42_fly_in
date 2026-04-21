@@ -22,15 +22,27 @@ class Map:
     drones: List[Drone] = field(default_factory=list)
     graph: Dict[Hub, Set[Edge]] = field(default_factory=dict)
 
-    def test_algo(self) -> Any:
+    line: str = ""
+
+    def next_turn(self) -> Any:
+
+        if self.start and self.end:
+            turn_txt = ""
+
+            while not all(d.where == self.end for d in self.drones):
+                for drone in (d for d in self.drones if d.where != self.end):
+                    # ACTION FOR EACH DRONES !
+                    algo = Dijkstra(self.graph, self.end)
+                    best_path = algo.run(drone.where)
+                    drone.where = best_path[1]
+                    turn_txt += f" {drone}"
+
+                yield turn_txt.lstrip()
+
         # if self.start and self.end:
         #     algo = BFS(self.graph, self.end)
         #     aaaa = algo.run(self.start)
         #     return aaaa
-        if self.start and self.end:
-            algo = Dijkstra(self.graph, self.end)
-            aaaa = algo.run(self.start)
-            return aaaa
 
     # ########################################################################
     # ######################################################## VALIDATION ####
@@ -45,7 +57,10 @@ class Map:
         if self.end is None:
             raise ErrorFlyIn("Map needs at least one ending hub")
 
-        self.drones = [Drone(self.start) for _ in range(self.nb_drones)]
+        self.drones = [
+            Drone(f"D{i + 1}", self.start)
+            for i, _ in enumerate(range(self.nb_drones))
+        ]
 
     # ########################################################################
     # ######################################################## GET DRONES ####

@@ -84,7 +84,15 @@ class Point:
         if isinstance(other, int):
             return Point(self.row + other, self.col + other)
 
-        raise ErrorFlyIn("Operator 'add' only allows Points or int")
+        raise ErrorFlyIn("Operator 'add' only allows Point or int")
+
+    def __sub__(self, other: Any) -> Point:
+        if isinstance(other, Point):
+            return self + Point(-other.row, -other.col)
+        if isinstance(other, int):
+            return self + -other
+
+        raise ErrorFlyIn("Operator 'sub' only allows Point or int")
 
     def __mul__(self, other: Any) -> Point:
         if isinstance(other, Point):
@@ -92,7 +100,7 @@ class Point:
         if isinstance(other, int):
             return Point(self.row * other, self.col * other)
 
-        raise ErrorFlyIn("Operator 'mul' only allows Points or int")
+        raise ErrorFlyIn("Operator 'mul' only allows Point or int")
 
     # ########################################################################
     # ############################################################# PARSE ####

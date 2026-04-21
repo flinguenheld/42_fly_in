@@ -40,8 +40,12 @@ class TMap(Widget, Anim):
     # ########################################################################
     # ############################################################ DRONES ####
     async def update_drones(self) -> None:
+        to_await = []
         for tdrone in self._tdrones:
-            asyncio.create_task(tdrone.fly_to_new_position())
+            to_await.append(asyncio.create_task(tdrone.fly_to_new_position()))
+
+        for a in to_await:
+            await a
 
     # ########################################################################
     # ########################################################### COMPOSE ####

@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Any
+from models.edge import Edge
+from models.hub import Hub
 from dataclasses import dataclass
 # from models.map import Edge
 
@@ -12,4 +13,8 @@ from dataclasses import dataclass
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀▀░░▀░▀░▀▀▀░▀░▀░▀▀▀░░
 @dataclass
 class Drone:
-    where: Any
+    name: str
+    where: Hub | Edge
+
+    def __str__(self) -> str:
+        return f"{self.name}-{self.where.name}"
