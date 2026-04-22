@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections import deque
 from models.edge import Edge
 from dataclasses import dataclass, field
 
@@ -33,8 +34,6 @@ class Map:
             add_done = done.append
 
             while not all(d.where == self.end for d in self.drones):
-                edge_used: Dict[Edge, int] = {}
-
                 # ############################# DRONES ON EDGE ###############
                 # ############################# DRONES ON EDGE ###############
                 # TODO: HAS TO BE DONE FIRST ?
@@ -50,11 +49,49 @@ class Map:
                 # ############################# DRONES ON EDGE ###############
                 # ############################# DRONES ON EDGE ###############
 
-                for drone in (
+                drones_to_move = deque(
                     d
                     for d in self.drones
                     if d.where != self.end and d not in done
-                ):
+                )
+
+                # OTHER IDEAD ##############################################################################
+                # OTHER IDEAD ##############################################################################
+                # OTHER IDEAD ##############################################################################
+                # OTHER IDEAD ##############################################################################
+
+                # 1 - Get ALL PATHS
+                #        -> Recursive function
+                #        -> Create a list of list of edges
+                #        -> Never come back in the graph
+
+                # 2 - Affect drones to one path
+                #        -> How ????
+
+                # TODO: PREVENT ANY COMEBACK
+                # TODO: PREVENT ANY COMEBACK
+                # TODO: PREVENT ANY COMEBACK
+                #   -> Keep track of the previous path to avoid
+
+                # TODO: IF THERE IS NO PATH, TRY TO FOLLOW THE NEXT DRONE !
+
+                # TODO: GET THE DIJSTRAK REGULAR AND THE 'ADAPTED' ONE
+                #     -> To compare them !!!!!!!!!!!!!!!!
+
+                TXT_TEST = ""
+
+                edge_used: Dict[Edge, int] = {}
+                # for drone in (
+                #     d
+                #     for d in self.drones
+                #     if d.where != self.end and d not in done
+                # ):
+                count = 0
+                while drones_to_move:
+                    drone = drones_to_move.pop()
+                    count += 1
+                    if count >= 10:
+                        break
                     # ACTION FOR EACH DRONES !
 
                     # TODO: ADAPT THE GRAPH WITH EDGE_USED on each loop !
@@ -62,8 +99,19 @@ class Map:
 
                     # Adapt the graph according to current positions
 
-                    algo = Dijkstra(self.graph, self.end, self.drones)
+                    algo = Dijkstra(
+                        self.graph, self.end, self.drones, edge_used
+                    )
                     best_path: List[Edge] = algo.run(drone.where)
+
+                    if not best_path:
+                        balh = ""
+                        for e, v in edge_used.items():
+                            balh += f"{e.name}:{v}\n"
+
+                        TXT_TEST += f"STUCK: {drone.name} -> {balh}"
+                        drones_to_move.appendleft(drone)
+                        continue
 
                     # Move to the available place
                     # TODO: Set the edge as used
@@ -76,9 +124,15 @@ class Map:
                     else:
                         drone.where = best_path[0].hub_to
 
+                    if best_path[0] in edge_used:
+                        edge_used[best_path[0]] += 1
+                    else:
+                        edge_used[best_path[0]] = 1
+
                     turn_txt += f" {drone}"
 
-                yield turn_txt.lstrip()
+                # yield turn_txt.lstrip()
+                yield f"-> aaaa {TXT_TEST}"
 
         # if self.start and self.end:
         #     algo = BFS(self.graph, self.end)

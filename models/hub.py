@@ -121,4 +121,5 @@ class Hub:
             case Hub.Type.END:
                 title = "Hub (end):"
 
-        return f"{title} '{self.name}' {self.point}"
+        # return f"{title} '{self.name}' {self.point}"
+        return f"Hub '{self.name}'"

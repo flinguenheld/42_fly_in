@@ -1,10 +1,10 @@
-from models.drone import Drone
 import math
 from collections import deque
-from typing import Dict, Set, Deque, List, Tuple
+from typing import Dict, Set, Deque, List
 
 from models.hub import Hub
 from models.map import Edge
+from models.drone import Drone
 from dataclasses import dataclass
 
 
@@ -17,11 +17,12 @@ class Dijkstra:
     graph: Dict[Hub, Set[Edge]]
     end: Hub
     drones: List[Drone]
-    # edge_used:
+    edge_used: Dict[Edge, int]
 
     def run(self, start: Hub) -> List[Edge]:
 
-        adated_graph = self.adapt_graph()
+        # adated_graph: Dict[Hub, Set[Edge]] = self.adapt_graph()
+        self.graph = self.adapt_graph()
         temp: Dict[Hub, float] = self.init_temp_graph(start)
         done: Set[Hub] = set()
 
@@ -34,21 +35,16 @@ class Dijkstra:
             if current_hub == self.end:
                 break
 
-            for edge in adated_graph[current_hub]:
-                # CHECK IF THE DESTINATION IS AVAILABLE OR NOT !
+            # No path !
+            # TODO: FIND A WAY TO CHECK THAT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # TODO: FIND A WAY TO CHECK THAT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # TODO: FIND A WAY TO CHECK THAT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # TODO: FIND A WAY TO CHECK THAT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            if not self.graph[current_hub]:
+                return []
 
-                # CANNOT BE DONE HERE -----------------------------------
-                # HAVE TO ADAPT THE GRAPH -------------------------------
-                # Is edge already occupied ??
-                # on_edge = sum(1 for d in self.drones if d.where == edge)
-                # if on_edge >= edge.restriction:
-                #     continue
-
-                # # Are there still room in the hub ??
-                # on_hub = sum(1 for d in self.drones if d.where == edge.hub_to)
-                # if on_hub >= edge.hub_to.max_drones:
-                #     continue
-
+            # for edge in adated_graph[current_hub]:
+            for edge in self.graph[current_hub]:
                 if edge.hub_to not in done:
                     cost = temp[current_hub] + edge.hub_to.zone.value
                     if cost < temp[edge.hub_to]:
@@ -76,14 +72,22 @@ class Dijkstra:
         ]
 
         # Edges to remove ?
-        edges_full = [
-            d.where for d in self.drones if isinstance(d.where, Edge)
+        # edges_full = [
+        #     d.where for d in self.drones if isinstance(d.where, Edge)
+        # ]
+
+        # Also remove edges which are currently used !!!!!!
+        edges_full: List[Edge] = [
+            e for e, v in self.edge_used.items() if v >= e.restriction
         ]
 
         # Create the new one !!!
         new_graph = {}
         for hub, edges in self.graph.items():
             # if hub not in hubs_full:
+            # TODO: HERE SOMETHING GOES WRONG ?????????????????????????????????
+            # TODO: HERE SOMETHING GOES WRONG ?????????????????????????????????
+            # TODO: HERE SOMETHING GOES WRONG ?????????????????????????????????
             new_graph[hub] = set(
                 [
                     e
