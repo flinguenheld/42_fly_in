@@ -68,7 +68,18 @@ class TDrone(Canvas, Anim):
         self.styles.display = "block"
 
         if not hasattr(self, "_where") or self._drone.where != self._where:
-            destination = self._drone.where.point.visual
+            # On edge --
+            if isinstance(self._drone.where, Edge):
+                line = list(
+                    self._current_offset().line_points(
+                        self._drone.where.hub_to.point.visual
+                    )
+                )
+                destination = line[len(line) // 2]
+
+            # On hub --
+            else:
+                destination = self._drone.where.point.visual
 
             # Get all points in the line --
             for position in self._current_offset().line_points(destination):

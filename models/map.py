@@ -29,20 +29,32 @@ class Map:
         if self.start and self.end:
             turn_txt = ""
 
+            done: List[Drone] = list()
+            add_done = done.append
+
             while not all(d.where == self.end for d in self.drones):
                 edge_used: Dict[Edge, int] = {}
 
-
+                # ############################# DRONES ON EDGE ###############
+                # ############################# DRONES ON EDGE ###############
                 # TODO: HAS TO BE DONE FIRST ?
                 # If a drone is currently on an edge, move it
                 # BUT: WHAT IF THE DESTINATION IS ALREADY USED ???
                 # -> MOVE IT ANYWAY... THE OTHER WILL BE MOVE IN THE SECOND LOOP....
                 on_edge = (d for d in self.drones if isinstance(d.where, Edge))
                 for d in on_edge:
-                    d.where = 
+                    if isinstance(d.where, Edge):
+                        d.where = d.where.hub_to
+                        add_done(d)
 
+                # ############################# DRONES ON EDGE ###############
+                # ############################# DRONES ON EDGE ###############
 
-                for drone in (d for d in self.drones if d.where != self.end):
+                for drone in (
+                    d
+                    for d in self.drones
+                    if d.where != self.end and d not in done
+                ):
                     # ACTION FOR EACH DRONES !
 
                     # TODO: ADAPT THE GRAPH WITH EDGE_USED on each loop !
@@ -50,8 +62,8 @@ class Map:
 
                     # Adapt the graph according to current positions
 
-                    algo = Dijkstra(self.graph, self.end)
-                    best_path = algo.run(drone.where)
+                    algo = Dijkstra(self.graph, self.end, self.drones)
+                    best_path: List[Edge] = algo.run(drone.where)
 
                     # Move to the available place
                     # TODO: Set the edge as used
@@ -59,7 +71,11 @@ class Map:
                     # TODO: CHECK IF THE HUB IS RESTRICTED OR NOT
                     #    -> put on an edge if so !!!!!
 
-                    drone.where = best_path[1]
+                    if best_path[0].hub_to.zone == Hub.Zone.RESTRICTED:
+                        drone.where = best_path[0]
+                    else:
+                        drone.where = best_path[0].hub_to
+
                     turn_txt += f" {drone}"
 
                 yield turn_txt.lstrip()

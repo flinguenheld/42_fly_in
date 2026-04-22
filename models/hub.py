@@ -1,7 +1,7 @@
 from __future__ import annotations
-import math
 from dataclasses import dataclass
 from enum import Enum
+import math
 
 from error import ErrorFlyIn
 from models.point import Point
