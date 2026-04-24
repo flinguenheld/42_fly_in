@@ -1,7 +1,7 @@
 from models.hub import Hub
-from typing import List
+from typing import List, Dict
 from models.edge import Edge
-from textual.widgets import Label
+from textual.widgets import Label, DataTable
 from visualiser.ttitle import TTitleDebug
 from textual.containers import VerticalGroup, ScrollableContainer
 from textual.app import ComposeResult
@@ -15,14 +15,43 @@ class TDebug(ModalScreen):
         ("q", "cancel", "Quit"),
     ]
 
-    def __init__(self, paths: List[List[Edge]] | None):
+    def __init__(self, paths: List[List[Edge]] | None, table):
         super().__init__()
         self._tpaths = Label("paths", classes="tdebug_paths", markup=False)
-        self._tturn_table = Label(
-            "turn table", classes="tdebug_paths", markup=False
-        )
+        # self._tturn_table = Label(
+        #     "turn table", classes="tdebug_paths", markup=False
+        # )
+        self._tturn_table = DataTable()
 
         self._shape_paths(paths)
+        self._shape_table(table)
+
+    def _shape_table(self, table: Dict[str, Dict[int, Edge]]) -> None:
+
+        # self._tturn_table.fixed_rows = 2
+        # self._tturn_table.fixed_columns = 20
+
+        # if table:
+
+        # self._tturn_table.update(str(table))
+
+        # TODO: GET THE AMOUNT OF TURNS !
+        nb_turns = 20
+
+        def create_row(drone: str, path: Dict[int, Edge]):
+
+            yield drone
+            for i in range(1, nb_turns):
+                if i in path:
+                    yield path[i].name
+                else:
+                    yield " "
+
+        for i in range(1, nb_turns + 1):
+            self._tturn_table.add_column(str(i - 1))
+
+        for drone, path in table.items():
+            self._tturn_table.add_row(*[c for c in create_row(drone, path)])
 
     # ########################################################################
     # ####################################################### SHAPE PATHS ####

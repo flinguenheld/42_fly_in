@@ -56,7 +56,9 @@ class TVisual(App):
         pass
 
         if self._map and self._tmap:
-            self.paths = self._map.OK_TEST()
+            self.paths = self._map.OK_TEST_PATHS()
+
+            self.table = self._map.OK_TEST_TABLE()
 
             # self.app.notify(f"{paths}", markup=False)
 
@@ -127,7 +129,7 @@ class TVisual(App):
     @work
     @Anim.toggle_anim
     async def action_debug(self) -> None:
-        await self.push_screen_wait(TDebug(self.paths))
+        await self.push_screen_wait(TDebug(self.paths, self.table))
 
     # ########################################################################
     # ########################################################### COMPOSE ####

@@ -11,6 +11,62 @@ from models.drone import Drone
 from typing import Dict, Set, Any, Callable, Tuple, Iterator, KeysView, List
 
 
+@dataclass
+class TurnTable:
+    graph: Dict[Hub, Set[Edge]]
+    paths: List[List[Edge]]
+    drones: List[Drone]
+
+    def __post_init__(self):
+        self.table: Dict[str, Dict[int, Edge]] = dict()
+
+    def run(self) -> Dict[str, Dict[int, Edge]]:
+
+        for drone in self.drones:
+            self.table[drone.name] = self._get_shortest_path()
+
+        return self.table
+
+    def _get_shortest_path(self):
+
+        def edges_on_turn(turn: int) -> Iterator[Edge]:
+            for drone, edges in self.table.items():
+                if turn in edges:
+                    yield edges[turn]
+
+        def is_edge_available(edge: Edge, turn: int) -> bool:
+            # return True
+            # TODO: TAKE CARE OF RESTRICTED
+            amount_on_edge = sum(1 for e in edges_on_turn(turn) if e == edge)
+            amount_on_hub = sum(
+                1 for e in edges_on_turn(turn) if e.hub_to == edge.hub_to
+            )
+
+            return (
+                amount_on_edge < edge.restriction
+                and amount_on_hub < edge.hub_to.max_drones
+            )
+
+        temp: Dict[int, Edge] = dict()
+
+        for path in self.paths:
+            new_line: Dict[int, Edge] = dict()
+
+            turn: int = 0
+            for edge in path:
+                while True:
+                    turn += 1
+
+                    if is_edge_available(edge, turn):
+                        new_line[turn] = edge
+                        break
+
+            if not temp or max(new_line.keys()) <= max(temp.keys()):
+                temp = new_line
+
+        return temp
+
+
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▄█░█▀█░█▀█░░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░█░█▀█░█▀▀░░
@@ -24,11 +80,19 @@ class Map:
 
     line: str = ""
 
-    def OK_TEST(self) -> List[List[Edge]] | None:
+    def OK_TEST_PATHS(self) -> List[List[Edge]] | None:
         if self.start and self.end:
             dfs = DFS(self.graph, self.start, self.end)
             return dfs.run()
         return None
+
+    def OK_TEST_TABLE(self):
+        if self.start and self.end:
+            dfs = DFS(self.graph, self.start, self.end)
+            paths = dfs.run()
+
+            table_creation = TurnTable(self.graph, paths, self.drones)
+            return table_creation.run()
 
     # ########################################################################
     # ######################################################## VALIDATION ####
