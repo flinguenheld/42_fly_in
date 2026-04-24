@@ -53,14 +53,19 @@ class TVisual(App):
     # ########################################################################
     # ######################################################### NEXT TURN ####
     async def action_next_turn(self) -> None:
+        pass
 
         if self._map and self._tmap:
-            # for step in self._map.test_algo():
-            step = next(self._map.next_turn(), None)
-            if step:
-                self.app.notify(f"{step} has moved !")
-                # Move and print what happened
-                await self._tmap.update_drones()
+            self.paths = self._map.OK_TEST()
+
+            # self.app.notify(f"{paths}", markup=False)
+
+            # # for step in self._map.test_algo():
+            # step = next(self._map.next_turn(), None)
+            # if step:
+            #     self.app.notify(f"{step} has moved !")
+            #     # Move and print what happened
+            #     await self._tmap.update_drones()
 
     # ########################################################################
     # ########################################################## RESTART #####
@@ -122,7 +127,7 @@ class TVisual(App):
     @work
     @Anim.toggle_anim
     async def action_debug(self) -> None:
-        await self.push_screen_wait(TDebug())
+        await self.push_screen_wait(TDebug(self.paths))
 
     # ########################################################################
     # ########################################################### COMPOSE ####
