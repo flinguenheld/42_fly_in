@@ -1,3 +1,4 @@
+from visualiser.tdebug import TDebug
 import asyncio
 
 from textual import work
@@ -26,6 +27,7 @@ class TVisual(App):
         "styles/main.tcss",
         "styles/map.tcss",
         "styles/file.tcss",
+        "styles/debug.tcss",
         "styles/message.tcss",
     ]
     BINDINGS = [
@@ -33,6 +35,7 @@ class TVisual(App):
         ("f", "file_selection", "File selection"),
         ("r", "restart", "restart map"),
         ("n", "next_turn", "Next turn"),
+        ("d", "debug", "Debug"),
     ]
 
     def __init__(self) -> None:
@@ -113,6 +116,13 @@ class TVisual(App):
         self._theme.next()
         if self._tmap:
             self._tmap.up_colours()
+
+    # ########################################################################
+    # ########################################################### TDEBUG #####
+    @work
+    @Anim.toggle_anim
+    async def action_debug(self) -> None:
+        await self.push_screen_wait(TDebug())
 
     # ########################################################################
     # ########################################################### COMPOSE ####

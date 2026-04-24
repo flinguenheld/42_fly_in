@@ -1,0 +1,33 @@
+TDebug {
+	align: center middle;
+}
+
+.tdebug_layout {
+	color: $accent;
+	border: round $accent;
+	content-align: center middle;
+
+	width: 90%;
+	height: 90%;
+	padding: 0 2 2 2;
+}
+
+.ttitle_debug {
+	color: $accent;
+}
+
+# ###############################################
+# #################################### PATHS ####
+
+.tdebug_layout_group {
+	color: $accent;
+	border: round $foreground;
+}
+
+.tdebug_paths {
+	width: 100%;
+	height: 100%;
+	text-align: center;
+
+	color: $accent;
+}
