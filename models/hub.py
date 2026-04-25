@@ -71,8 +71,8 @@ class Hub:
     def __post_init__(self) -> None:
         if "-" in self.name or " " in self.name:
             raise ErrorFlyIn("Name cannot contains space nor dash.")
-        if len(self.name) < 3:
-            raise ErrorFlyIn("Name cannot have less than three letters.")
+        # if len(self.name) < 3:
+        #     raise ErrorFlyIn("Name cannot have less than three letters.")
         if self.max_drones < 0:
             raise ErrorFlyIn("Max drones value cannot be less than 0.")
 

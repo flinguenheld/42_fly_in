@@ -17,7 +17,7 @@ class Point:
     row: int
     col: int
 
-    VISUAL_SCALE_ROW: ClassVar[int] = 20
+    VISUAL_SCALE_ROW: ClassVar[int] = 10
     VISUAL_SCALE_COL: ClassVar[int] = 30
     VISUAL_PADDING_ROW: ClassVar[int] = 6
     VISUAL_PADDING_COL: ClassVar[int] = 10
