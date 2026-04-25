@@ -1,3 +1,4 @@
+from algo.turn_table import TurnTable
 from models.hub import Hub
 from typing import List, Dict
 from models.edge import Edge
@@ -15,50 +16,48 @@ class TDebug(ModalScreen):
         ("q", "cancel", "Quit"),
     ]
 
-    def __init__(self, paths: List[List[Edge]] | None, table):
+    def __init__(self, paths: List[List[Edge]] | None, drones, table):
         super().__init__()
-        self._tpaths = Label("paths", classes="tdebug_paths", markup=False)
-        # self._tturn_table = Label(
-        #     "turn table", classes="tdebug_paths", markup=False
-        # )
-        self._tturn_table = DataTable()
+        self._tpaths_lay = ScrollableContainer(classes="tdebug_layout_paths")
+        self._tpaths = Label("paths", classes="tdebug_field", markup=False)
+
+        self._ttable_lay = ScrollableContainer(classes="tdebug_layout_table")
+        self._ttable = DataTable(classes="tdebug_field")
 
         self._shape_paths(paths)
-        self._shape_table(table)
+        self._shape_table(drones, table)
 
-    def _shape_table(self, table: Dict[str, Dict[int, Edge]]) -> None:
+    # ########################################################################
+    # ####################################################### SHAPE TABLE ####
+    def _shape_table(self, drones, table: TurnTable) -> None:
 
-        # self._tturn_table.fixed_rows = 2
-        # self._tturn_table.fixed_columns = 20
-
-        # if table:
-
-        # self._tturn_table.update(str(table))
-
-        # TODO: GET THE AMOUNT OF TURNS !
-        nb_turns = 20
-
-        def create_row(drone: str, path: Dict[int, Edge]):
-
+        # ###################################### CREATE ROW ####
+        def create_row(drone: str, table):
             yield drone
-            for i in range(1, nb_turns):
-                if i in path:
-                    yield path[i].name
+            for where in table.drone_iterator(drone):
+                if where:
+                    yield where.name
                 else:
                     yield " "
 
-        for i in range(1, nb_turns + 1):
-            self._tturn_table.add_column(str(i - 1))
+        # ######################################################
+        self._ttable_lay.border_title = f"Done in {table.nb_turns} turns"
 
-        for drone, path in table.items():
-            self._tturn_table.add_row(*[c for c in create_row(drone, path)])
+        self._ttable.add_column("Drones\\Turns")
+        self._ttable.zebra_stripes = True
+
+        for i in range(2, table.nb_turns + 2):
+            self._ttable.add_column(str(i - 1))
+
+        for drone in drones:
+            self._ttable.add_row(*[c for c in create_row(drone, table)])
 
     # ########################################################################
     # ####################################################### SHAPE PATHS ####
     def _shape_paths(self, paths: List[List[Edge]] | None) -> None:
 
         if paths:
-            txt = f"--== {len(paths)} paths found ==--\n\n"
+            txt = ""
 
             for path in paths:
                 line = "Start"
@@ -72,6 +71,7 @@ class TDebug(ModalScreen):
                 txt += f"{line}\n"
 
             self._tpaths.update(txt)
+            self._tpaths_lay.border_title = f"{len(paths)} paths found"
         else:
             self._tpaths.update("Nothing")
 
@@ -80,10 +80,10 @@ class TDebug(ModalScreen):
     def compose(self) -> ComposeResult:
         with VerticalGroup(classes="tdebug_layout"):
             yield TTitleDebug()
-            with ScrollableContainer(classes="tdebug_layout_group"):
+            with self._tpaths_lay:
                 yield self._tpaths
-            with ScrollableContainer(classes="tdebug_layout_group"):
-                yield self._tturn_table
+            with self._ttable_lay:
+                yield self._ttable
 
     # ########################################################################
     # ############################################################ CANCEL ####

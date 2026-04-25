@@ -1,5 +1,3 @@
-from models.edge import Edge
-from models.hub import Hub
 import time
 import random
 import asyncio
@@ -7,12 +5,14 @@ from typing import override
 from itertools import pairwise
 from dataclasses import dataclass
 
-from models.map import Drone
+from models.hub import Hub
+from models.edge import Edge
 from models.point import Point
 from visualiser.ftheme import FTheme
 from visualiser.animation import Anim
 
 from textual_canvas import Canvas
+from textual.reactive import reactive
 
 
 @dataclass
@@ -32,6 +32,8 @@ class TDrone(Canvas, Anim):
     WIDTH = 3
     HEIGHT = 4
 
+    where: reactive[Hub | Edge | None] = reactive(None)
+
     _points = [
         _Coordinate(Point(3, 0), Point(1, 2)),
         _Coordinate(Point(2, 0), Point(2, 2), "babord"),
@@ -44,7 +46,7 @@ class TDrone(Canvas, Anim):
         _Coordinate(Point(3, 0), Point(1, 2)),
     ]
 
-    def __init__(self, drone: Drone) -> None:
+    def __init__(self) -> None:
         Canvas.__init__(self, 3, 4)
         Anim.__init__(self)
         self.up_colours()
@@ -53,33 +55,43 @@ class TDrone(Canvas, Anim):
         self._blink_on = True
         self._speed = 0.1
 
-        # Associate a model with the visual and init a random position --
-        self._drone = drone
+        # Init a random position
         self.styles.offset = (random.randint(-5, 40), random.randint(-5, 40))
 
-        # Not init for the first fly
-        self._where: Hub | Edge
+        self.is_flying = False
+
+    # ########################################################################
+    # ########################################################## REACTIVE ####
+    async def watch_where(
+        self,
+        old_position: Hub | Edge | None,
+        new_position: Hub | Edge | None,
+    ) -> None:
+
+        if new_position:
+            asyncio.create_task(self.fly_to_new_position(new_position))
 
     # ########################################################################
     # ############################################################### FLY ####
-    async def fly_to_new_position(self) -> None:
+    async def fly_to_new_position(self, where_to: Hub | Edge) -> None:
         """If the drone has moved, fly !"""
 
+        self.is_flying = True
         self.styles.display = "block"
 
-        if not hasattr(self, "_where") or self._drone.where != self._where:
+        if not hasattr(self, "_where") or where_to != self._where:
             # On edge --
-            if isinstance(self._drone.where, Edge):
+            if isinstance(where_to, Edge):
                 line = list(
                     self._current_offset().line_points(
-                        self._drone.where.hub_to.point.visual
+                        where_to.hub_to.point.visual
                     )
                 )
                 destination = line[len(line) // 2]
 
             # On hub --
             else:
-                destination = self._drone.where.point.visual
+                destination = where_to.point.visual
 
             # Get all points in the line --
             for position in self._current_offset().line_points(destination):
@@ -89,7 +101,9 @@ class TDrone(Canvas, Anim):
                 )
                 await asyncio.sleep(0.04)
 
-            self._where = self._drone.where
+            self._where = where_to
+
+        self.is_flying = False
 
     # ########################################################################
     # #################################################### CURRENT OFFSET ####

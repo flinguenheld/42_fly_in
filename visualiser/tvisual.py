@@ -35,6 +35,7 @@ class TVisual(App):
         ("f", "file_selection", "File selection"),
         ("r", "restart", "restart map"),
         ("n", "next_turn", "Next turn"),
+        ("p", "previous_turn", "Previous turn"),
         ("d", "debug", "Debug"),
     ]
 
@@ -52,22 +53,17 @@ class TVisual(App):
 
     # ########################################################################
     # ######################################################### NEXT TURN ####
+
+    # TODO: ADD ANOTHER OPTION TO DO ALL TURNS --
+    # TODO: ALSO A WAY TO STOP IN THE MIDDLE ---
+
     async def action_next_turn(self) -> None:
-        pass
-
         if self._map and self._tmap:
-            self.paths = self._map.OK_TEST_PATHS()
+            await self._tmap.next_turn()
 
-            self.table = self._map.OK_TEST_TABLE()
-
-            # self.app.notify(f"{paths}", markup=False)
-
-            # # for step in self._map.test_algo():
-            # step = next(self._map.next_turn(), None)
-            # if step:
-            #     self.app.notify(f"{step} has moved !")
-            #     # Move and print what happened
-            #     await self._tmap.update_drones()
+    async def action_previous_turn(self) -> None:
+        if self._map and self._tmap:
+            await self._tmap.previous_turn()
 
     # ########################################################################
     # ########################################################## RESTART #####
@@ -99,11 +95,11 @@ class TVisual(App):
             self._tmap.remove()
 
         if self._map:
+            self._map.create_table()
             self._tmap = TMap(self._map)
             self._layout_map.mount(self._tmap)
 
             await asyncio.create_task(self._tmap.draw_hubs())
-            await asyncio.create_task(self._tmap.update_drones())
 
     # ########################################################################
     # ###################################################### SELECT FILE #####
@@ -129,7 +125,10 @@ class TVisual(App):
     @work
     @Anim.toggle_anim
     async def action_debug(self) -> None:
-        await self.push_screen_wait(TDebug(self.paths, self.table))
+        if self._map:
+            await self.push_screen_wait(
+                TDebug(self._map.paths, self._map.drones, self._map.table)
+            )
 
     # ########################################################################
     # ########################################################### COMPOSE ####

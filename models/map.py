@@ -1,12 +1,11 @@
 from __future__ import annotations
-from turn_table import TurnTable
 from dataclasses import dataclass, field
 
 from algo.dfs import DFS
 from models.hub import Hub
 from models.edge import Edge
 from error import ErrorFlyIn
-from models.drone import Drone
+from algo.turn_table import TurnTable
 
 from typing import Dict, Set, Any, Callable, Tuple, Iterator, KeysView, List
 
@@ -19,24 +18,26 @@ from typing import Dict, Set, Any, Callable, Tuple, Iterator, KeysView, List
 class Map:
     name: str
     nb_drones: int = 1
-    drones: List[Drone] = field(default_factory=list)
+    drones: List[str] = field(default_factory=list)
     graph: Dict[Hub, Set[Edge]] = field(default_factory=dict)
+    table: TurnTable | None = None
 
-    line: str = ""
+    # current_turn: int = 0
 
-    def OK_TEST_PATHS(self) -> List[List[Edge]] | None:
+    # ########################################################################
+    # ###################################################### CREATE TABLE ####
+    def create_table(self) -> None:
         if self.start and self.end:
+            # 1 - Get all paths
             dfs = DFS(self.graph, self.start, self.end)
-            return dfs.run()
-        return None
+            self.paths = dfs.run()
 
-    def OK_TEST_TABLE(self):
-        if self.start and self.end:
-            dfs = DFS(self.graph, self.start, self.end)
-            paths = dfs.run()
+            # 2 - Create drones
+            for i in range(self.nb_drones):
+                self.drones.append(f"D{i}")
 
-            table_creation = TurnTable(self.graph, paths, self.drones)
-            return table_creation.run()
+            # 3 - Create table
+            self.table = TurnTable(self.graph, self.paths, self.drones)
 
     # ########################################################################
     # ######################################################## VALIDATION ####
@@ -50,17 +51,6 @@ class Map:
 
         if self.end is None:
             raise ErrorFlyIn("Map needs at least one ending hub")
-
-        self.drones = [
-            Drone(f"D{i + 1}", self.start)
-            for i, _ in enumerate(range(self.nb_drones))
-        ]
-
-    # ########################################################################
-    # ######################################################## GET DRONES ####
-    def get_drones(self) -> Iterator[Drone]:
-        for d in self.drones:
-            yield d
 
     # ########################################################################
     # ################################################### GET CONNECTIONS ####

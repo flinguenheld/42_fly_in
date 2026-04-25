@@ -1,5 +1,6 @@
+from models.edge import Edge
 import asyncio
-from typing import override, Tuple, List, Set
+from typing import override, Tuple, List, Set, Dict
 
 from models.map import Map
 from models.hub import Hub
@@ -26,7 +27,9 @@ class TMap(Widget, Anim):
         Widget.__init__(self)
         Anim.__init__(self)
 
-        self._map = map
+        self.map = map
+        self.current_turn = 0
+
         self._thubs: List[THub] = []
 
         # Get the size & create canvas --
@@ -34,24 +37,57 @@ class TMap(Widget, Anim):
         self._up_visual_shift()
 
         # Drones --
-        self._tdrones: List[TDrone] = [
-            TDrone(d) for d in self._map.get_drones()
-        ]
+        self._tdrones: Dict[str, TDrone] = dict()
+        for name in self.map.drones:
+            drone = TDrone()
+            drone.where = self.map.start
+            self._tdrones[name] = drone
+
+    async def next_turn(self):
+        if self.map.table:
+            if self.current_turn < self.map.table.nb_turns:
+                self.current_turn += 1
+
+                new_positions = self.map.table.get_turn(self.current_turn)
+                await self.update_drones(new_positions)
+
+    async def previous_turn(self):
+        if self.map.table:
+            if self.current_turn > 0:
+                self.current_turn -= 1
+
+                if self.current_turn == 0:
+                    pos = {name: self.map.start for name in self.map.drones}
+                else:
+                    pos = self.map.table.get_turn(self.current_turn, all=True)
+
+                await self.update_drones(pos)
 
     # ########################################################################
     # ############################################################ DRONES ####
-    async def update_drones(self) -> None:
-        to_await = []
-        for tdrone in self._tdrones:
-            to_await.append(asyncio.create_task(tdrone.fly_to_new_position()))
+    async def update_drones(
+        self, new_positions: Dict[str, Hub | Edge]
+    ) -> None:
 
-        for a in to_await:
-            await a
+        if self.map and self.map.table:
+            to_await: List[TDrone] = []
+
+            for drone, position in new_positions.items():
+                self._tdrones[drone].where = position
+                to_await.append(self._tdrones[drone])
+
+            while any(d.is_flying for d in to_await):
+                await asyncio.sleep(1)
+
+            self._up_hub_counters()
+            await asyncio.sleep(2)
 
         # Update hub counters --
+
+    def _up_hub_counters(self):
         for thub in self._thubs:
             thub.occupied = sum(
-                (1 for d in self._map.drones if d.where == thub._hub)
+                (1 for d in self._tdrones.values() if d.where == thub._hub)
             )
 
     # ########################################################################
@@ -59,13 +95,13 @@ class TMap(Widget, Anim):
     def compose(self) -> ComposeResult:
         yield self._canvas
 
-        for tdrone in self._tdrones:
+        for tdrone in self._tdrones.values():
             yield tdrone
 
     # ########################################################################
     # ######################################################## UP COLOURS ####
     def up_colours(self) -> None:
-        for d in self._tdrones:
+        for d in self._tdrones.values():
             d.up_colours()
 
     # ########################################################################
@@ -81,7 +117,7 @@ class TMap(Widget, Anim):
                 self._thubs.append(h)
 
             done: Set[Hub] = set()
-            for hub_fr, hub_to, restriction in self._map.get_edges():
+            for hub_fr, hub_to, restriction in self.map.get_edges():
                 if hub_fr not in done:
                     _mount_and_save(hub_fr, done)
 
@@ -94,16 +130,18 @@ class TMap(Widget, Anim):
                 self._canvas.draw_edge(hub_fr.point, hub_to.point, restriction)
                 await asyncio.sleep(0.01)
 
+            self._up_hub_counters()
+
     # ########################################################################
     # ######################################################## ANIMATIONS ####
     @override
     async def anim_on(self) -> None:
-        for drone in self._tdrones:
+        for drone in self._tdrones.values():
             await drone.anim_on()
 
     @override
     async def anim_off(self) -> None:
-        for drone in self._tdrones:
+        for drone in self._tdrones.values():
             await drone.anim_off()
 
     # ###################################################################### #
@@ -114,11 +152,11 @@ class TMap(Widget, Anim):
     # ###################################################################### #
     # ################################################### GET VISUAL SIZE ## #
     def _get_visual_size(self) -> Tuple[int, int]:
-        max_row: Hub = max(self._map.hubs, key=lambda h: h.point.row)
-        min_row: Hub = min(self._map.hubs, key=lambda h: h.point.row)
+        max_row: Hub = max(self.map.hubs, key=lambda h: h.point.row)
+        min_row: Hub = min(self.map.hubs, key=lambda h: h.point.row)
 
-        max_col: Hub = max(self._map.hubs, key=lambda h: h.point.col)
-        min_col: Hub = min(self._map.hubs, key=lambda h: h.point.col)
+        max_col: Hub = max(self.map.hubs, key=lambda h: h.point.col)
+        min_col: Hub = min(self.map.hubs, key=lambda h: h.point.col)
 
         if max_row and min_row and max_col and min_col:
             rows = max_row.point.row - min_row.point.row
@@ -133,9 +171,9 @@ class TMap(Widget, Anim):
         """
         Compute a 'shift' value to move the graph at the top left.
         """
-        if self._map.hubs:
-            min_row: Hub = min(self._map.hubs, key=lambda h: h.point.row)
-            min_col: Hub = min(self._map.hubs, key=lambda h: h.point.col)
+        if self.map.hubs:
+            min_row: Hub = min(self.map.hubs, key=lambda h: h.point.row)
+            min_col: Hub = min(self.map.hubs, key=lambda h: h.point.col)
 
             if min_row and min_col:
                 row: int = min_row.point.row

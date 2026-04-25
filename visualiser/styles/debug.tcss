@@ -19,15 +19,19 @@ TDebug {
 # ###############################################
 # #################################### PATHS ####
 
-.tdebug_layout_group {
+.tdebug_layout_paths {
+	height: 30%;
 	color: $accent;
 	border: round $foreground;
 }
 
-.tdebug_paths {
-	width: auto;
-	height: auto;
-	# text-align: center;
-
+.tdebug_layout_table {
+	height: 60%;
 	color: $accent;
+	border: round $foreground;
+}
+
+.tdebug_field {
+	color: $accent;
+	padding: 1;
 }
