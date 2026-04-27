@@ -20,3 +20,9 @@ TTitle {
 	color: $primary;
 	content-align: center middle;
 }
+
+.tinfo {
+	width: 100%;
+	text-align: center;
+	color: $primary;
+}

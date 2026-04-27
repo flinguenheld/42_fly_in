@@ -1,3 +1,4 @@
+from textual.widgets import Label
 import asyncio
 
 from textual import work
@@ -50,6 +51,7 @@ class TVisual(App):
         self.ftheme = FTheme(self.app)
         self.file_path: str | None = None
 
+        self._tinfo = Label("Select a file", markup=False, classes="tinfo")
         self._tactions = TActions()
         self._layout_map = ScrollableContainer(classes="tmap_layout")
 
@@ -96,7 +98,7 @@ class TVisual(App):
             self.tmap = None
 
         if self.map:
-            self.tmap = TMap(self.map)
+            self.tmap = TMap(self.map, self.up_info)
             self._layout_map.mount(self.tmap)
 
             await asyncio.create_task(self.tmap.draw_hubs())
@@ -133,15 +135,19 @@ class TVisual(App):
     # ########################################################################
     # ########################################################### COMPOSE ####
     def compose(self) -> ComposeResult:
-        # yield Header(show_clock=True)
         with Vertical():
             yield self._title
             yield self._tactions
+            yield self._tinfo
             yield self._layout_map
-        # yield Footer()
 
     # ########################################################################
     # ############################################################# MOUNT ####
     async def on_mount(self) -> None:
         self.ftheme.next()
         self.call_later(self.action_file_selection)
+
+    # ########################################################################
+    # ########################################################### UP_INFO ####
+    def up_info(self, txt: str) -> None:
+        self._tinfo.update(f"{txt}")
