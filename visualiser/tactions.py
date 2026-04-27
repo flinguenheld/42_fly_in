@@ -21,7 +21,7 @@ class TActions(Static):
             classes="bt_actions",
         )
         self._run = Button(
-            "(R)un",
+            "R(u)n",
             flat=True,
             variant="primary",
             classes="bt_actions",
@@ -85,7 +85,7 @@ class TActions(Static):
 
         # TODO: ADD that
         if event.button == self._run:
-            await self.app.run_action("blah")
+            await self.app.run_action("run")
 
         if event.button == self._next:
             await self.app.run_action("next_turn")

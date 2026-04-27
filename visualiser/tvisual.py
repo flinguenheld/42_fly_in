@@ -1,7 +1,7 @@
-from textual.widgets import Label
 import asyncio
 
 from textual import work
+from textual.widgets import Label
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, ScrollableContainer
 
@@ -33,12 +33,13 @@ class TVisual(App):
         "styles/actions.tcss",
     ]
     BINDINGS = [
-        ("t", "next_theme", "Next theme"),
+        ("p", "previous_turn", "Previous turn"),
+        ("u", "run", "Run"),
+        ("n", "next_turn", "Next turn"),
         ("f", "file_selection", "File selection"),
         ("r", "restart", "restart map"),
-        ("n", "next_turn", "Next turn"),
-        ("p", "previous_turn", "Previous turn"),
         ("d", "debug", "Debug"),
+        ("t", "next_theme", "Next theme"),
     ]
 
     def __init__(self) -> None:
@@ -56,23 +57,29 @@ class TVisual(App):
         self._layout_map = ScrollableContainer(classes="tmap_layout")
 
     # ########################################################################
-    # ######################################################### NEXT TURN ####
+    # ################################################### TURN MANAGEMENT ####
+    def action_next_turn(self) -> None:
+        if self.tmap and not self.tmap.is_flying:
+            self.tmap.next_turn()
 
-    # TODO: ADD ANOTHER OPTION TO DO ALL TURNS --
-    # TODO: ALSO A WAY TO STOP IN THE MIDDLE ---
+    async def action_run(self) -> None:
+        if self.tmap:
+            if self.tmap.is_running_all_steps:
+                self.tmap.stop_running()
 
-    async def action_next_turn(self) -> None:
-        if self.map and self.tmap:
-            await self.tmap.next_turn()
+            elif not self.tmap.is_flying:
+                asyncio.create_task(self.tmap.run_all_steps())
 
-    async def action_previous_turn(self) -> None:
-        if self.map and self.tmap:
-            await self.tmap.previous_turn()
+    def action_previous_turn(self) -> None:
+        if self.tmap and not self.tmap.is_flying:
+            self.tmap.previous_turn()
 
     # ########################################################################
     # ########################################################## RESTART #####
     async def action_restart(self) -> None:
-        if self.file_path:
+        if self.file_path and (
+            self.tmap is None or not self.tmap.is_running_all_steps
+        ):
             try:
                 parser = FileParser(self.file_path)
                 parser.parse_file()

@@ -30,6 +30,7 @@ class TMap(Widget, Anim):
         self.map = map
         self.current_turn = 0
         self.up_info_call = up_info
+        self.is_running_all_steps = False
 
         self._thubs: List[THub] = []
 
@@ -47,46 +48,70 @@ class TMap(Widget, Anim):
             self._tdrones[name] = drone
 
     # ########################################################################
+    # ################################################# RUNNING ALL STEPS ####
+    def stop_running(self) -> None:
+        self.is_running_all_steps = False
+
+    async def run_all_steps(self) -> None:
+        self.is_running_all_steps = True
+
+        while self.current_turn < self.map.table.nb_turns:
+            if not self.is_running_all_steps:
+                break
+
+            self.next_turn()
+
+            # Wait the reactive TDrone event
+            while not self.is_flying:
+                await asyncio.sleep(0.3)
+
+            # And wait the end of the turn
+            while self.is_flying:
+                await asyncio.sleep(0.3)
+
+            await asyncio.sleep(0.8)
+
+        self.stop_running()
+
+    # ########################################################################
     # ################################################### NEXT / PREVIOUS ####
-    async def next_turn(self) -> None:
+    def next_turn(self) -> None:
         if self.current_turn < self.map.table.nb_turns:
             self.current_turn += 1
             self.info()
 
             new_positions = self.map.table.get_turn(self.current_turn)
-            await self.update_drones(new_positions)
+            self._update_drones(new_positions)
 
-    async def previous_turn(self) -> None:
+    def previous_turn(self) -> None:
         if self.current_turn > 0:
             self.current_turn -= 1
             self.info()
 
             new_pos = self.map.table.get_turn(self.current_turn, all=True)
-            await self.update_drones(new_pos)
+            self._update_drones(new_pos)
 
     # ########################################################################
-    # ############################################################ DRONES ####
-    async def update_drones(
+    # ######################################################### IS FLYING ####
+    @property
+    def is_flying(self) -> bool:
+        return any(d.is_flying for d in self._tdrones.values())
+
+    # ########################################################################
+    # ######################################################### UP DRONES ####
+    def _update_drones(
         self, new_positions: Dict[str, Hub | Edge | None]
     ) -> None:
 
-        if self.map:
-            to_await: List[TDrone] = []
+        for drone, position in new_positions.items():
+            if not position:
+                position = self.map.start
+            self._tdrones[drone].where = position
 
-            for drone, position in new_positions.items():
-                if not position:
-                    position = self.map.start
-                self._tdrones[drone].where = position
-                to_await.append(self._tdrones[drone])
+        self._up_hub_counters()
 
-            while any(d.is_flying for d in to_await):
-                await asyncio.sleep(1)
-
-            self._up_hub_counters()
-            await asyncio.sleep(2)
-
-        # Update hub counters --
-
+    # ########################################################################
+    # ################################################### UP HUB COUNTERS ####
     def _up_hub_counters(self) -> None:
         for thub in self._thubs:
             thub.occupied = sum(
@@ -111,29 +136,27 @@ class TMap(Widget, Anim):
     # ######################################################### DRAW HUBS ####
     async def draw_hubs(self) -> None:
 
-        if self._canvas:
+        def _mount_and_save(new: Hub, done: Set[Hub]) -> None:
+            h = THub(new)
+            done.add(new)
+            self.mount(h)
+            self._thubs.append(h)
 
-            def _mount_and_save(new: Hub, done: Set[Hub]) -> None:
-                h = THub(new)
-                done.add(new)
-                self.mount(h)
-                self._thubs.append(h)
+        done: Set[Hub] = set()
+        for hub_fr, hub_to, restriction in self.map.get_edges():
+            if hub_fr not in done:
+                _mount_and_save(hub_fr, done)
 
-            done: Set[Hub] = set()
-            for hub_fr, hub_to, restriction in self.map.get_edges():
-                if hub_fr not in done:
-                    _mount_and_save(hub_fr, done)
+            if hub_to not in done:
+                _mount_and_save(hub_to, done)
 
-                if hub_to not in done:
-                    _mount_and_save(hub_to, done)
+            await asyncio.sleep(0.01)
+            self._canvas.draw_node(hub_fr.point, FTheme.foreground)
+            self._canvas.draw_node(hub_to.point, FTheme.foreground)
+            self._canvas.draw_edge(hub_fr.point, hub_to.point, restriction)
+            await asyncio.sleep(0.01)
 
-                await asyncio.sleep(0.01)
-                self._canvas.draw_node(hub_fr.point, FTheme.foreground)
-                self._canvas.draw_node(hub_to.point, FTheme.foreground)
-                self._canvas.draw_edge(hub_fr.point, hub_to.point, restriction)
-                await asyncio.sleep(0.01)
-
-            self._up_hub_counters()
+        self._up_hub_counters()
 
     # ########################################################################
     # ######################################################## ANIMATIONS ####
@@ -144,6 +167,8 @@ class TMap(Widget, Anim):
 
     @override
     async def anim_off(self) -> None:
+        self.is_running_all_steps = False
+
         for drone in self._tdrones.values():
             await drone.anim_off()
 
@@ -174,18 +199,17 @@ class TMap(Widget, Anim):
         """
         Compute a 'shift' value to move the graph at the top left.
         """
-        if self.map.hubs:
-            min_row: Hub = min(self.map.hubs, key=lambda h: h.point.row)
-            min_col: Hub = min(self.map.hubs, key=lambda h: h.point.col)
+        min_row: Hub = min(self.map.hubs, key=lambda h: h.point.row)
+        min_col: Hub = min(self.map.hubs, key=lambda h: h.point.col)
 
-            if min_row and min_col:
-                row: int = min_row.point.row
-                col: int = min_col.point.col
+        if min_row and min_col:
+            row: int = min_row.point.row
+            col: int = min_col.point.col
 
-                shift_row = abs(row) if row < 0 else -row
-                shift_col = abs(col) if col < 0 else -col
+            shift_row = abs(row) if row < 0 else -row
+            shift_col = abs(col) if col < 0 else -col
 
-                Point.visual_shift = Point(shift_row, shift_col)
+            Point.visual_shift = Point(shift_row, shift_col)
 
     # ########################################################################
     # ########################################################### UP_INFO ####

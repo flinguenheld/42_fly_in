@@ -39,26 +39,10 @@ Drones are interesting.
 |  D9  |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
 
 
-<<<<<<< Updated upstream
 #### Logic
 1. Get all paths
 2. Create the turn table (as a list of dictionary)
 3. Read the table turn after turn to move all drones
-=======
-
-1. Get all paths
-2. Sort them
-
-3. For each drones:
-  - Create a temp list
-  - For each paths:
-      - Add a line
-      - Complete columns with the path
-      - Check each column:
-           - Is the edge/node available ?
-           - Shift the node to the right
-           - Repeat until the path works with the other drones above
->>>>>>> Stashed changes
 
 
 <hr>

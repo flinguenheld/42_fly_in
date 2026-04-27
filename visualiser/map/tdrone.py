@@ -57,7 +57,7 @@ class TDrone(Canvas, Anim):
 
         # Init a random position
         self.styles.offset = (random.randint(-5, 40), random.randint(-5, 40))
-        self.is_flying = False
+        self.fly_task: asyncio.Task | None = None
 
     # ########################################################################
     # ########################################################## REACTIVE ####
@@ -70,7 +70,6 @@ class TDrone(Canvas, Anim):
         # #######################################################
         # ############################################## FLY ####
         async def fly_to_new_position(where_to: Hub | Edge) -> None:
-            self.is_flying = True
             self.styles.display = "block"
 
             # On edge --
@@ -92,12 +91,16 @@ class TDrone(Canvas, Anim):
                     position.x - (TDrone.WIDTH // 2),
                     position.y - (TDrone.HEIGHT),
                 )
-                await asyncio.sleep(0.04)
-
-            self.is_flying = False
+                await asyncio.sleep(0.02)
 
         # #######################################################
-        asyncio.create_task(fly_to_new_position(new_position))
+        self.fly_task = asyncio.create_task(fly_to_new_position(new_position))
+
+    # ########################################################################
+    # ######################################################### IS FLYING ####
+    @property
+    def is_flying(self) -> bool:
+        return self.fly_task is not None and not self.fly_task.done()
 
     # ########################################################################
     # #################################################### CURRENT OFFSET ####
