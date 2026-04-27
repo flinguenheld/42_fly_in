@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import List, Iterator
 import os
 
-from models.map import Map
+from models.map import MapCreator
 from models.hub import Hub
 from error import ErrorFlyIn
 from parser.fields import Fields
@@ -24,7 +24,7 @@ class FileParser:
         if not os.path.isfile(self.path):
             self._raise_errorfile("File does not exist.")
 
-        self.new_map = Map(os.path.basename(self.path))
+        self.map_creation = MapCreator(os.path.basename(self.path))
 
     # ########################################################################
     # ######################################################## PARSE FILE ####
@@ -63,7 +63,7 @@ class FileParser:
         nb = first_line.get("1")
 
         try:
-            self.new_map.nb_drones = int(nb)
+            self.map_creation.nb_drones = int(nb)
         except ValueError:
             self._raise_errorfile("Invalid drone number.", first_line.line)
 
@@ -73,7 +73,7 @@ class FileParser:
     def _parse_hubs(self, lines: Iterator[Fields]) -> None:
         for field in lines:
             try:
-                self.new_map += Hub.parse(field)
+                self.map_creation += Hub.parse(field)
 
             except ErrorFlyIn as e:
                 raise e + {"file": self.path, "line": field.line}
@@ -93,7 +93,7 @@ class FileParser:
                 else:
                     capacity = 1
 
-                self.new_map.connect_hubs(hub_from, hub_to, capacity)
+                self.map_creation.connect_hubs(hub_from, hub_to, capacity)
 
             except ValueError:
                 self._raise_errorfile("Invalid option format.", field.line)
@@ -104,7 +104,7 @@ class FileParser:
     # ########################################################################
     # ############################################################### STR ####
     def __str__(self) -> str:
-        return f"Values parsed:\n{self.new_map}"
+        return f"Values parsed:\n{self.map_creation}"
 
     # ########################################################################
     # ##################################### RAISE ERROR WITH FILE CONTEXT ####

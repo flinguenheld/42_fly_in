@@ -1,12 +1,14 @@
-from algo.turn_table import TurnTable
+from typing import List, Iterator
+
 from models.hub import Hub
-from typing import List, Dict
 from models.edge import Edge
-from textual.widgets import Label, DataTable
+from algo.turn_table import TurnTable
 from visualiser.ttitle import TTitleDebug
-from textual.containers import VerticalGroup, ScrollableContainer
+
 from textual.app import ComposeResult
 from textual.screen import ModalScreen
+from textual.widgets import Label, DataTable
+from textual.containers import VerticalGroup, ScrollableContainer
 
 
 class TDebug(ModalScreen):
@@ -16,23 +18,28 @@ class TDebug(ModalScreen):
         ("q", "cancel", "Quit"),
     ]
 
-    def __init__(self, paths: List[List[Edge]] | None, drones, table):
+    def __init__(
+        self,
+        paths: List[List[Edge]] | None,
+        drones: List[str],
+        table: TurnTable,
+    ) -> None:
         super().__init__()
         self._tpaths_lay = ScrollableContainer(classes="tdebug_layout_paths")
         self._tpaths = Label("paths", classes="tdebug_field", markup=False)
 
         self._ttable_lay = ScrollableContainer(classes="tdebug_layout_table")
-        self._ttable = DataTable(classes="tdebug_field")
+        self._ttable: DataTable[str] = DataTable(classes="tdebug_field")
 
         self._shape_paths(paths)
         self._shape_table(drones, table)
 
     # ########################################################################
     # ####################################################### SHAPE TABLE ####
-    def _shape_table(self, drones, table: TurnTable) -> None:
+    def _shape_table(self, drones: List[str], table: TurnTable) -> None:
 
         # ###################################### CREATE ROW ####
-        def create_row(drone: str, table):
+        def create_row(drone: str, table: TurnTable) -> Iterator[str]:
             yield drone
             for where in table.drone_iterator(drone):
                 if where:

@@ -44,8 +44,8 @@ class TVisual(App):
 
         self._title = TTitleMain()
 
-        self._map: Map | None = None
-        self._tmap: TMap | None = None
+        self.map: Map | None = None
+        self.tmap: TMap | None = None
         self._theme = FTheme(self.app)
         self._file_path: str | None = None
 
@@ -58,12 +58,12 @@ class TVisual(App):
     # TODO: ALSO A WAY TO STOP IN THE MIDDLE ---
 
     async def action_next_turn(self) -> None:
-        if self._map and self._tmap:
-            await self._tmap.next_turn()
+        if self.map and self.tmap:
+            await self.tmap.next_turn()
 
     async def action_previous_turn(self) -> None:
-        if self._map and self._tmap:
-            await self._tmap.previous_turn()
+        if self.map and self.tmap:
+            await self.tmap.previous_turn()
 
     # ########################################################################
     # ########################################################## RESTART #####
@@ -73,10 +73,8 @@ class TVisual(App):
                 parser = FileParser(self._file_path)
                 parser.parse_file()
 
-                new_map = parser.new_map
-                new_map.is_valid()
-
-                self._map = new_map
+                self.map = None
+                self.map = Map(parser.map_creation)
                 await self._init_map()
 
             except ErrorFlyIn as ef:
@@ -91,15 +89,15 @@ class TVisual(App):
     # ###################################### INIT MAP #####
     async def _init_map(self) -> None:
 
-        if self._tmap:
-            self._tmap.remove()
+        if self.tmap:
+            self.tmap.remove()
+            self.tmap = None
 
-        if self._map:
-            self._map.create_table()
-            self._tmap = TMap(self._map)
-            self._layout_map.mount(self._tmap)
+        if self.map:
+            self.tmap = TMap(self.map)
+            self._layout_map.mount(self.tmap)
 
-            await asyncio.create_task(self._tmap.draw_hubs())
+            await asyncio.create_task(self.tmap.draw_hubs())
 
     # ########################################################################
     # ###################################################### SELECT FILE #####
@@ -117,17 +115,17 @@ class TVisual(App):
     # ########################################################### THEMES #####
     def action_next_theme(self) -> None:
         self._theme.next()
-        if self._tmap:
-            self._tmap.up_colours()
+        if self.tmap:
+            self.tmap.up_colours()
 
     # ########################################################################
     # ########################################################### TDEBUG #####
     @work
     @Anim.toggle_anim
     async def action_debug(self) -> None:
-        if self._map:
+        if self.map:
             await self.push_screen_wait(
-                TDebug(self._map.paths, self._map.drones, self._map.table)
+                TDebug(self.map.paths, self.map.drones, self.map.table)
             )
 
     # ########################################################################

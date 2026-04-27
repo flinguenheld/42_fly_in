@@ -113,13 +113,13 @@ class Hub:
     # ########################################################################
     # ############################################################### STR ####
     def __str__(self) -> str:
-        match self.type:
-            case Hub.Type.REGULAR:
-                title = "Hub :"
-            case Hub.Type.START:
-                title = "Hub (start):"
-            case Hub.Type.END:
-                title = "Hub (end):"
+        # match self.type:
+        #     case Hub.Type.REGULAR:
+        #         title = "Hub :"
+        #     case Hub.Type.START:
+        #         title = "Hub (start):"
+        #     case Hub.Type.END:
+        #         title = "Hub (end):"
 
         # return f"{title} '{self.name}' {self.point}"
         return f"Hub '{self.name}'"

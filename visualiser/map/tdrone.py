@@ -57,7 +57,6 @@ class TDrone(Canvas, Anim):
 
         # Init a random position
         self.styles.offset = (random.randint(-5, 40), random.randint(-5, 40))
-
         self.is_flying = False
 
     # ########################################################################
@@ -65,25 +64,19 @@ class TDrone(Canvas, Anim):
     async def watch_where(
         self,
         old_position: Hub | Edge | None,
-        new_position: Hub | Edge | None,
+        new_position: Hub | Edge,
     ) -> None:
 
-        if new_position:
-            asyncio.create_task(self.fly_to_new_position(new_position))
+        # #######################################################
+        # ############################################## FLY ####
+        async def fly_to_new_position(where_to: Hub | Edge) -> None:
+            self.is_flying = True
+            self.styles.display = "block"
 
-    # ########################################################################
-    # ############################################################### FLY ####
-    async def fly_to_new_position(self, where_to: Hub | Edge) -> None:
-        """If the drone has moved, fly !"""
-
-        self.is_flying = True
-        self.styles.display = "block"
-
-        if not hasattr(self, "_where") or where_to != self._where:
             # On edge --
             if isinstance(where_to, Edge):
                 line = list(
-                    self._current_offset().line_points(
+                    where_to.hub_from.point.visual.line_points(
                         where_to.hub_to.point.visual
                     )
                 )
@@ -101,9 +94,10 @@ class TDrone(Canvas, Anim):
                 )
                 await asyncio.sleep(0.04)
 
-            self._where = where_to
+            self.is_flying = False
 
-        self.is_flying = False
+        # #######################################################
+        asyncio.create_task(fly_to_new_position(new_position))
 
     # ########################################################################
     # #################################################### CURRENT OFFSET ####

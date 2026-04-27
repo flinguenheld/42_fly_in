@@ -19,30 +19,12 @@ class TurnTable:
     drones: List[str]
     table: Dict[str, Dict[int, Edge]] = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         for drone in self.drones:
             self.table[drone] = self._get_shortest_path()
 
     # ########################################################################
-    # ######################################################### ITERATORS ####
-    def turn_iterator(self) -> Iterator[Dict[str, Hub | Edge]]:
-
-        for turn in range(1, self.nb_turns + 1):
-            to_yield: Dict[str, Hub | Edge] = {}
-
-            for drone, positions in self.table.items():
-                if turn in positions:
-                    # Is in the middle of a restricted area ?
-                    if (
-                        turn + 1 in positions
-                        and positions[turn] == positions[turn + 1]
-                    ):
-                        to_yield[drone] = positions[turn]
-                    else:
-                        to_yield[drone] = positions[turn].hub_to
-
-            yield to_yield
-
+    # #################################################### DRONE ITERATOR ####
     def drone_iterator(self, drone: str) -> Iterator[Edge | None]:
         for i in range(1, self.nb_turns + 1):
             if i in self.table[drone]:
@@ -50,29 +32,42 @@ class TurnTable:
             else:
                 yield None
 
-    def get_turn(self, turn: int, all: bool = False) -> Dict[str, Hub | Edge]:
-        blah: Dict[str, Hub | Edge] = dict()
+    # ########################################################################
+    # ########################################################## GET TURN ####
+    def get_turn(
+        self,
+        turn: int,
+        all: bool = False,
+    ) -> Dict[str, Hub | Edge | None]:
+        """
+        Get drones and their position at the given turn
+        By default, it only return those which are active on the turn.
+        Use all = True to get all of them
+        """
+
+        positions: Dict[str, Hub | Edge | None] = dict()
 
         for drone, edges in self.table.items():
             if turn in edges:
                 # Is in the middle of a restricted area ?
-                if turn + 1 in edges and edges[turn] == edges[turn + 1]:
-                    blah[drone] = edges[turn]
+                if edges[turn].first_on_restricted_zone:
+                    positions[drone] = edges[turn]
                 else:
-                    blah[drone] = edges[turn].hub_to
-            # TODO: CAN'T WORK - FIND ANOTHER WAY !!!!!!!!
-            # TODO: CAN'T WORK - FIND ANOTHER WAY !!!!!!!!
-            # TODO: CAN'T WORK - FIND ANOTHER WAY !!!!!!!!
-            # TODO: CAN'T WORK - FIND ANOTHER WAY !!!!!!!!
-            elif all and turn > 1:
+                    positions[drone] = edges[turn].hub_to
+
+            elif all:
                 # Get the previous turn which is not None
+                # None will be managed as start by TDrone
                 prev = turn - 1
-                while prev not in edges:
+                while prev > 0 and prev not in edges:
                     prev -= 1
 
-                blah[drone] = edges[turn].hub_to
+                if prev <= 0:
+                    positions[drone] = None
+                else:
+                    positions[drone] = edges[prev].hub_to
 
-        return blah
+        return positions
 
     # ########################################################################
     # ######################################################### ACCESSORS ####
@@ -94,7 +89,7 @@ class TurnTable:
 
     # ########################################################################
     # ################################################# GET SHORTEST PATH ####
-    def _get_shortest_path(self):
+    def _get_shortest_path(self) -> Dict[int, Edge]:
 
         # #######################################################
         # ################################ IS EDGE AVAILABLE ####
@@ -121,7 +116,10 @@ class TurnTable:
 
         # #######################################################
         # ################################## CHOOSE EARLIEST ####
-        def choose_earliest(current: Dict[int, Edge], temp: Dict[int, Edge]):
+        def choose_earliest(
+            current: Dict[int, Edge],
+            temp: Dict[int, Edge],
+        ) -> Dict[int, Edge]:
 
             if not temp:
                 return current
@@ -164,8 +162,8 @@ class TurnTable:
 
                     if edge.hub_to.zone == Hub.Zone.RESTRICTED:
                         if are_edges_available(edge, turn):
+                            current_line[turn] = edge.copy_first_true()
                             current_line[turn + 1] = edge
-                            current_line[turn] = edge
                             turn += 1
                             break
 

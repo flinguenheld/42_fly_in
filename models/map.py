@@ -14,50 +14,27 @@ from typing import Dict, Set, Any, Callable, Tuple, Iterator, KeysView, List
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▄█░█▀█░█▀█░░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░█░█▀█░█▀▀░░
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░▀░▀░▀░▀░░░░
-@dataclass
 class Map:
-    name: str
-    nb_drones: int = 1
-    drones: List[str] = field(default_factory=list)
-    graph: Dict[Hub, Set[Edge]] = field(default_factory=dict)
-    table: TurnTable | None = None
+    def __init__(self, creator: MapCreator):
+        """Raise ErrorFly if map_creator is invalid"""
 
-    # current_turn: int = 0
+        creator.is_valid()
+
+        self.name: str = creator.name
+        self.graph: dict[Hub, set[Edge]] = creator.graph
+        self.drones: List[str] = [f"D{i}" for i in range(creator.nb_drones)]
+
+        self.table: TurnTable = self._create_table()
 
     # ########################################################################
     # ###################################################### CREATE TABLE ####
-    def create_table(self) -> None:
-        if self.start and self.end:
-            # 1 - Get all paths
-            dfs = DFS(self.graph, self.start, self.end)
-            self.paths = dfs.run()
+    def _create_table(self) -> TurnTable:
+        # 1 - Get all paths
+        dfs = DFS(self.graph, self.start, self.end)
+        self.paths = dfs.run()
 
-            # 2 - Create drones
-            for i in range(self.nb_drones):
-                self.drones.append(f"D{i}")
-
-            # 3 - Create table
-            self.table = TurnTable(self.graph, self.paths, self.drones)
-
-    # ########################################################################
-    # ######################################################## VALIDATION ####
-    @ErrorFlyIn.spread(title="Map validation")
-    def is_valid(self) -> None:
-        if self.nb_drones < 1:
-            raise ErrorFlyIn("Nb drones cannot be less than 1")
-
-        if self.start is None:
-            raise ErrorFlyIn("Map needs at least one starting hub")
-
-        if self.end is None:
-            raise ErrorFlyIn("Map needs at least one ending hub")
-
-    # ########################################################################
-    # ################################################### GET CONNECTIONS ####
-    def get_edges(self) -> Iterator[Tuple[Hub, Hub, int]]:
-        for hub, edges in self.graph.items():
-            for edge in edges:
-                yield (hub, edge.hub_to, edge.restriction)
+        # 2 - Create table
+        return TurnTable(self.graph, self.paths, self.drones)
 
     # ########################################################################
     # ############################################################## HUBS ####
@@ -66,20 +43,56 @@ class Map:
         return self.graph.keys()
 
     @property
-    def start(self) -> Hub | None:
+    def start(self) -> Hub:
         return self._get_hub(lambda h: h.type, Hub.Type.START)
 
     @property
-    def end(self) -> Hub | None:
+    def end(self) -> Hub:
         return self._get_hub(lambda h: h.type, Hub.Type.END)
 
     # #################################################### GET HUB ####
+    def _get_hub(self, what: Callable, value: Any) -> Hub:
+        return next((h for h in self.graph.keys() if what(h) == value))
+
+    # ########################################################################
+    # ################################################### GET CONNECTIONS ####
+    def get_edges(self) -> Iterator[Tuple[Hub, Hub, int]]:
+        for hub, edges in self.graph.items():
+            for edge in edges:
+                yield (hub, edge.hub_to, edge.restriction)
+
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█▄█░█▀█░█▀█░░░█▀▀░█▀▄░█▀▀░█▀█░▀█▀░█▀█░█▀▄░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░█░█░█▀█░█▀▀░░░█░░░█▀▄░█▀▀░█▀█░░█░░█░█░█▀▄░░
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▀░▀░▀░▀░▀░░░░░▀▀▀░▀░▀░▀▀▀░▀░▀░░▀░░▀▀▀░▀░▀░░
+@dataclass
+class MapCreator:
+    name: str
+    nb_drones: int = 1
+    graph: Dict[Hub, Set[Edge]] = field(default_factory=dict)
+
+    # ########################################################################
+    # ######################################################## VALIDATION ####
+    @ErrorFlyIn.spread(title="Map validation")
+    def is_valid(self) -> None:
+        if self.nb_drones < 1:
+            raise ErrorFlyIn("Nb drones cannot be less than 1")
+
+        if self._get_hub(lambda h: h.type, Hub.Type.START) is None:
+            raise ErrorFlyIn("Map needs at least one starting hub")
+
+        if self._get_hub(lambda h: h.type, Hub.Type.END) is None:
+            raise ErrorFlyIn("Map needs at least one ending hub")
+
+    # ########################################################################
+    # ############################################################## HUBS ####
     def _get_hub(self, what: Callable, value: Any) -> Hub | None:
         return next((h for h in self.graph.keys() if what(h) == value), None)
 
     # ######################################################### += ####
     @ErrorFlyIn.spread(title="Add hub in map")
-    def __iadd__(self, new_hub: Hub) -> Map:
+    def __iadd__(self, new_hub: Hub) -> MapCreator:
         """
         Add the hub inside the graph
 

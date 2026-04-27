@@ -1,9 +1,9 @@
-from models.edge import Edge
 import asyncio
 from typing import override, Tuple, List, Set, Dict
 
 from models.map import Map
 from models.hub import Hub
+from models.edge import Edge
 from models.point import Point
 
 from textual.widget import Widget
@@ -27,52 +27,51 @@ class TMap(Widget, Anim):
         Widget.__init__(self)
         Anim.__init__(self)
 
-        self.map = map
-        self.current_turn = 0
+        if map:
+            self.map = map
+            self.current_turn = 0
 
-        self._thubs: List[THub] = []
+            self._thubs: List[THub] = []
 
-        # Get the size & create canvas --
-        self._canvas = TCanvas(*self._get_visual_size())
-        self._up_visual_shift()
+            # Get the size & create canvas --
+            self._canvas = TCanvas(*self._get_visual_size())
+            self._up_visual_shift()
 
-        # Drones --
-        self._tdrones: Dict[str, TDrone] = dict()
-        for name in self.map.drones:
-            drone = TDrone()
-            drone.where = self.map.start
-            self._tdrones[name] = drone
+            # Drones --
+            self._tdrones: Dict[str, TDrone] = dict()
+            for name in self.map.drones:
+                drone = TDrone()
+                drone.where = self.map.start
+                self._tdrones[name] = drone
 
-    async def next_turn(self):
-        if self.map.table:
-            if self.current_turn < self.map.table.nb_turns:
-                self.current_turn += 1
+    # ########################################################################
+    # ################################################### NEXT / PREVIOUS ####
+    async def next_turn(self) -> None:
+        if self.current_turn < self.map.table.nb_turns:
+            self.current_turn += 1
 
-                new_positions = self.map.table.get_turn(self.current_turn)
-                await self.update_drones(new_positions)
+            new_positions = self.map.table.get_turn(self.current_turn)
+            await self.update_drones(new_positions)
 
-    async def previous_turn(self):
-        if self.map.table:
-            if self.current_turn > 0:
-                self.current_turn -= 1
+    async def previous_turn(self) -> None:
+        if self.current_turn > 0:
+            self.current_turn -= 1
 
-                if self.current_turn == 0:
-                    pos = {name: self.map.start for name in self.map.drones}
-                else:
-                    pos = self.map.table.get_turn(self.current_turn, all=True)
-
-                await self.update_drones(pos)
+            new_pos = self.map.table.get_turn(self.current_turn, all=True)
+            await self.update_drones(new_pos)
 
     # ########################################################################
     # ############################################################ DRONES ####
     async def update_drones(
-        self, new_positions: Dict[str, Hub | Edge]
+        self, new_positions: Dict[str, Hub | Edge | None]
     ) -> None:
 
-        if self.map and self.map.table:
+        if self.map:
             to_await: List[TDrone] = []
 
             for drone, position in new_positions.items():
+                if not position:
+                    position = self.map.start
                 self._tdrones[drone].where = position
                 to_await.append(self._tdrones[drone])
 
@@ -84,7 +83,7 @@ class TMap(Widget, Anim):
 
         # Update hub counters --
 
-    def _up_hub_counters(self):
+    def _up_hub_counters(self) -> None:
         for thub in self._thubs:
             thub.occupied = sum(
                 (1 for d in self._tdrones.values() if d.where == thub._hub)
