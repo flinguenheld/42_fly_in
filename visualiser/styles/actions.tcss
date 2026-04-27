@@ -1,0 +1,60 @@
+# Theme colours:
+#   - primary
+#   - secondary
+#   - accent
+#   - foreground
+#   - background
+#   - success
+#   - warning
+#   - error
+#   - surface
+#   - panel
+
+# Button variations:
+# "default", "primary", "success", "warning", "error"
+
+# Border options:
+# 'ascii', 'blank', 'block', 'dashed', 'double', 'heavy', 'hidden', 'hkey',
+# 'inner', 'none', 'outer', 'panel', 'round', 'solid', 'tab', 'tall',
+# 'thick', 'vkey', 'wide'
+
+# #############################################################################
+# ################################################################ LAYOUTS ####
+.alayout_primary {
+    border: round $primary;
+}
+.alayout_success {
+    border: round $success;
+}
+.alayout_warning {
+    border: round $warning;
+}
+.alayout_error {
+    border: round $error;
+}
+
+#amain_layout {
+    width: 100%;
+    height: auto;
+    align: center middle;
+    content-align: center middle;
+    padding: 0;
+    margin: 0;
+
+    overflow-x: auto;
+    scrollbar-gutter: stable;
+}
+
+.alayout_group {
+    width: auto;
+    height: auto;
+    margin: 0;
+}
+
+# #############################################################################
+# ################################################################ BUTTONS ####
+.bt_actions {
+    width: auto;
+    margin: 0 1;
+    border: none;
+}

@@ -5,7 +5,7 @@ TMap {
 	height: auto;
 
 	content-align: center middle;
-	border: round red;
+	border: round $panel;
 	padding: 1;
 }
 
@@ -23,7 +23,7 @@ Canvas {
 }
 
 .tmap_layout {
-	border: round orange;
+	# border: round orange;
 	align: center middle;
 }
 

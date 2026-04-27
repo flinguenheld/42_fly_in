@@ -1,9 +1,7 @@
-from visualiser.tdebug import TDebug
 import asyncio
 
 from textual import work
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer
 from textual.containers import Vertical, ScrollableContainer
 
 from models.map import Map
@@ -13,7 +11,9 @@ from parser.file_parser import FileParser
 from visualiser.tfile import TFile
 from visualiser.ftheme import FTheme
 from visualiser.map.tmap import TMap
+from visualiser.tdebug import TDebug
 from visualiser.animation import Anim
+from visualiser.tactions import TActions
 from visualiser.ttitle import TTitleMain
 from visualiser.tmessage import TMessageError
 
@@ -29,6 +29,7 @@ class TVisual(App):
         "styles/file.tcss",
         "styles/debug.tcss",
         "styles/message.tcss",
+        "styles/actions.tcss",
     ]
     BINDINGS = [
         ("t", "next_theme", "Next theme"),
@@ -46,9 +47,10 @@ class TVisual(App):
 
         self.map: Map | None = None
         self.tmap: TMap | None = None
-        self._theme = FTheme(self.app)
-        self._file_path: str | None = None
+        self.ftheme = FTheme(self.app)
+        self.file_path: str | None = None
 
+        self._tactions = TActions()
         self._layout_map = ScrollableContainer(classes="tmap_layout")
 
     # ########################################################################
@@ -68,9 +70,9 @@ class TVisual(App):
     # ########################################################################
     # ########################################################## RESTART #####
     async def action_restart(self) -> None:
-        if self._file_path:
+        if self.file_path:
             try:
-                parser = FileParser(self._file_path)
+                parser = FileParser(self.file_path)
                 parser.parse_file()
 
                 self.map = None
@@ -108,13 +110,13 @@ class TVisual(App):
         # self._file_path = "./maps/hello.txt"
 
         if new_path:
-            self._file_path = new_path
+            self.file_path = new_path
             await self.action_restart()
 
     # ########################################################################
     # ########################################################### THEMES #####
     def action_next_theme(self) -> None:
-        self._theme.next()
+        self.ftheme.next()
         if self.tmap:
             self.tmap.up_colours()
 
@@ -131,14 +133,15 @@ class TVisual(App):
     # ########################################################################
     # ########################################################### COMPOSE ####
     def compose(self) -> ComposeResult:
-        yield Header(show_clock=True)
+        # yield Header(show_clock=True)
         with Vertical():
             yield self._title
+            yield self._tactions
             yield self._layout_map
-        yield Footer()
+        # yield Footer()
 
     # ########################################################################
     # ############################################################# MOUNT ####
     async def on_mount(self) -> None:
-        self._theme.next()
+        self.ftheme.next()
         self.call_later(self.action_file_selection)
