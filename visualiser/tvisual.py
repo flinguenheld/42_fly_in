@@ -90,11 +90,13 @@ class TVisual(App):
                 await self._init_map()
 
             except ErrorFlyIn as ef:
+                self.file_path = None
                 await self.push_screen_wait(
                     TMessageError(ef.str_with_context())
                 )
 
             except Exception as e:
+                self.file_path = None
                 await self.push_screen_wait(TMessageError(str(e)))
 
     # #####################################################

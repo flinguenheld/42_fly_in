@@ -33,6 +33,9 @@ class Map:
         dfs = DFS(self.graph, self.start, self.end)
         self.paths = dfs.run()
 
+        if not self.paths:
+            raise ErrorFlyIn(f"No path found from {self.start} to {self.end}.")
+
         # 2 - Create table
         return TurnTable(self.graph, self.paths, self.drones)
 

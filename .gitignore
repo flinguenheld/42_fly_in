@@ -208,4 +208,7 @@ __marimo__/
 
 # Perso
 maps.tar.gz
-maps/*
+maps/challenger/*
+maps/easy/*
+maps/hard/*
+maps/medium/*

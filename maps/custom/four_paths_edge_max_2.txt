@@ -1,0 +1,35 @@
+nb_drones: 10
+
+# #############################################################################
+# #############################################################################
+
+start_hub: Start           0  2  [zone=normal     color=green    max_drones=99]
+
+hub:       Top1            1  0  [zone=normal     color=blue     max_drones=4 ]
+hub:       Top2            3  0  [zone=normal     color=blue     max_drones=4 ]
+
+hub:       Middle1         1  1  [zone=normal     color=blue     max_drones=4 ]
+hub:       Middle2         3  1  [zone=normal     color=blue     max_drones=4 ]
+
+hub:       Direct          2  2  [zone=normal     color=blue     max_drones=4 ]
+
+hub:       Restricted      2  3  [zone=restricted color=red      max_drones=4 ]
+
+end_hub:   Goal            4  2  [zone=normal     color=green    max_drones=99]
+
+# #############################################################################
+# #############################################################################
+
+connection:              Start-Top1                  [max_link_capacity=2]
+connection:              Top1-Top2                   [max_link_capacity=2]
+connection:              Top2-Goal                   [max_link_capacity=2]
+
+connection:              Start-Middle1               [max_link_capacity=2]
+connection:              Middle1-Middle2             [max_link_capacity=2]
+connection:              Middle2-Goal                [max_link_capacity=2]
+
+connection:              Start-Direct                [max_link_capacity=2]
+connection:              Direct-Goal                 [max_link_capacity=2]
+
+connection:              Start-Restricted            [max_link_capacity=2]
+connection:              Restricted-Goal             [max_link_capacity=2]
