@@ -108,7 +108,7 @@ class TVisual(App):
             self.tmap = TMap(self.map, self.up_info)
             self._layout_map.mount(self.tmap)
 
-            await asyncio.create_task(self.tmap.draw_hubs())
+            await self.tmap.initialise_map()
 
     # ########################################################################
     # ###################################################### SELECT FILE #####

@@ -33,19 +33,28 @@ class TMap(Widget, Anim):
         self.is_running_all_steps = False
 
         self._thubs: List[THub] = []
+        self._tdrones: Dict[str, TDrone] = dict()
 
         # Get the size & create canvas --
         self._canvas = TCanvas(*self._get_visual_size())
         self._up_visual_shift()
 
-        self.info()
+    # ########################################################################
+    # ########################################################## INIT MAP ####
+    async def initialise_map(self) -> None:
+        """Draw hubs, add drones, up counters and info"""
 
-        # Drones --
-        self._tdrones: Dict[str, TDrone] = dict()
+        await self.draw_hubs()
+
         for name in self.map.drones:
             drone = TDrone()
-            drone.where = self.map.start
+            self.mount(drone)
             self._tdrones[name] = drone
+
+            drone.where = self.map.start
+
+        self._up_hub_counters()
+        self.info()
 
     # ########################################################################
     # ################################################# RUNNING ALL STEPS ####
@@ -123,9 +132,6 @@ class TMap(Widget, Anim):
     def compose(self) -> ComposeResult:
         yield self._canvas
 
-        for tdrone in self._tdrones.values():
-            yield tdrone
-
     # ########################################################################
     # ######################################################## UP COLOURS ####
     def up_colours(self) -> None:
@@ -155,8 +161,6 @@ class TMap(Widget, Anim):
             self._canvas.draw_node(hub_to.point, FTheme.foreground)
             self._canvas.draw_edge(hub_fr.point, hub_to.point, restriction)
             await asyncio.sleep(0.01)
-
-        self._up_hub_counters()
 
     # ########################################################################
     # ######################################################## ANIMATIONS ####
