@@ -59,6 +59,12 @@ class TActions(Static):
             variant="primary",
             classes="bt_actions",
         )
+        self._quit = Button(
+            "(Q)uit",
+            flat=True,
+            variant="default",
+            classes="bt_actions",
+        )
 
     # ########################################################################
     # ########################################################## COMPOSE #####
@@ -75,6 +81,7 @@ class TActions(Static):
                 yield self._debug
             with HorizontalGroup(classes="alayout_group alayout_primary"):
                 yield self._theme
+                yield self._quit
 
     # ########################################################################
     # ########################################################## ACTIONS #####
@@ -101,3 +108,6 @@ class TActions(Static):
 
         if event.button == self._theme:
             await self.app.run_action("next_theme")
+
+        if event.button == self._quit:
+            await self.app.run_action("quit")

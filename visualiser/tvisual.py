@@ -40,6 +40,7 @@ class TVisual(App):
         ("r", "restart", "restart map"),
         ("d", "debug", "Debug"),
         ("t", "next_theme", "Next theme"),
+        ("q", "quit", "Quit"),
     ]
 
     def __init__(self) -> None:
@@ -134,9 +135,14 @@ class TVisual(App):
     @work
     @Anim.toggle_anim
     async def action_debug(self) -> None:
-        if self.map:
+        if self.tmap and self.map:
             await self.push_screen_wait(
-                TDebug(self.map.paths, self.map.drones, self.map.table)
+                TDebug(
+                    self.map.paths,
+                    self.map.drones,
+                    self.map.table,
+                    self.tmap.current_turn,
+                )
             )
 
     # ########################################################################

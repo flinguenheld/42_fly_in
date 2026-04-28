@@ -15,6 +15,7 @@ class TDebug(ModalScreen):
     BINDINGS = [
         ("escape", "cancel", "Quit"),
         ("enter", "cancel", "Quit"),
+        ("d", "cancel", "Quit"),
         ("q", "cancel", "Quit"),
     ]
 
@@ -23,6 +24,7 @@ class TDebug(ModalScreen):
         paths: List[List[Edge]] | None,
         drones: List[str],
         table: TurnTable,
+        current_turn: int,
     ) -> None:
         super().__init__()
         self._tpaths_lay = ScrollableContainer(classes="tdebug_layout_paths")
@@ -31,19 +33,26 @@ class TDebug(ModalScreen):
         self._ttable_lay = ScrollableContainer(classes="tdebug_layout_table")
         self._ttable: DataTable[str] = DataTable(classes="tdebug_field")
 
-        self._shape_paths(paths)
-        self._shape_table(drones, table)
+        self._fill_paths(paths)
+        self._fill_table(drones, table)
+
+        # Table styles --
+        self._ttable.zebra_stripes = True
+        self._ttable.cursor_type = "column"
+        self._ttable.move_cursor(column=current_turn + 1)
 
     # ########################################################################
     # ####################################################### SHAPE TABLE ####
-    def _shape_table(self, drones: List[str], table: TurnTable) -> None:
+    def _fill_table(self, drones: List[str], table: TurnTable) -> None:
 
         # ###################################### CREATE ROW ####
         def create_row(drone: str, table: TurnTable) -> Iterator[str]:
             yield drone
+            yield table.paths[0][0].hub_from.name
+
             for where in table.drone_iterator(drone):
                 if where:
-                    yield where.name
+                    yield where.hub_to.name
                 else:
                     yield " "
 
@@ -51,17 +60,16 @@ class TDebug(ModalScreen):
         self._ttable_lay.border_title = f"Done in {table.nb_turns} turns"
 
         self._ttable.add_column("Drones\\Turns")
-        self._ttable.zebra_stripes = True
 
-        for i in range(2, table.nb_turns + 2):
-            self._ttable.add_column(str(i - 1))
+        for i in range(2, table.nb_turns + 3):
+            self._ttable.add_column(str(i - 2))
 
         for drone in drones:
             self._ttable.add_row(*[c for c in create_row(drone, table)])
 
     # ########################################################################
     # ####################################################### SHAPE PATHS ####
-    def _shape_paths(self, paths: List[List[Edge]] | None) -> None:
+    def _fill_paths(self, paths: List[List[Edge]] | None) -> None:
 
         if paths:
             txt = ""
