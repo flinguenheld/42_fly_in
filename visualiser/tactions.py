@@ -52,8 +52,8 @@ class TActions(Static):
             variant="default",
             classes="bt_actions",
         )
-        self._debug = Button(
-            "(D)ebug",
+        self._table = Button(
+            "T(A)ble",
             flat=True,
             variant="warning",
             classes="bt_actions",
@@ -85,7 +85,7 @@ class TActions(Static):
                 yield self._restart
             with HorizontalGroup(classes="alayout_group alayout_warning"):
                 yield self._list
-                yield self._debug
+                yield self._table
             with HorizontalGroup(classes="alayout_group alayout_primary"):
                 yield self._theme
                 yield self._quit
@@ -113,8 +113,8 @@ class TActions(Static):
         if event.button == self._list:
             await self.app.run_action("list")
 
-        if event.button == self._debug:
-            await self.app.run_action("debug")
+        if event.button == self._table:
+            await self.app.run_action("table")
 
         if event.button == self._theme:
             await self.app.run_action("next_theme")

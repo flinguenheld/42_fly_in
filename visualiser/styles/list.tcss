@@ -16,12 +16,6 @@ TList {
 	color: $accent;
 }
 
-.tdebug_layout_paths {
-	height: 30%;
-	color: $accent;
-	border: round $accent;
-}
-
 .tlist_info {
 	height: auto;
 	width: 100%;

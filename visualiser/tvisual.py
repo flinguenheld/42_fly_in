@@ -13,7 +13,7 @@ from parser.file_parser import FileParser
 from visualiser.tfile import TFile
 from visualiser.ftheme import FTheme
 from visualiser.map.tmap import TMap
-from visualiser.tdebug import TDebug
+from visualiser.ttable import TTable
 from visualiser.animation import Anim
 from visualiser.tactions import TActions
 from visualiser.ttitle import TTitleMain
@@ -30,7 +30,7 @@ class TVisual(App):
         "styles/map.tcss",
         "styles/file.tcss",
         "styles/list.tcss",
-        "styles/debug.tcss",
+        "styles/table.tcss",
         "styles/message.tcss",
         "styles/actions.tcss",
     ]
@@ -41,7 +41,7 @@ class TVisual(App):
         ("f", "file_selection", "File selection"),
         ("r", "restart", "restart map"),
         ("l", "list", "List"),
-        ("d", "debug", "Debug"),
+        ("a", "table", "Table"),
         ("t", "next_theme", "Next theme"),
         ("q", "quit", "Quit"),
     ]
@@ -140,7 +140,7 @@ class TVisual(App):
             self.tmap.up_colours()
 
     # ########################################################################
-    # ########################################################### TDEBUG #####
+    # ############################################################ TLIST #####
     @work
     @Anim.toggle_anim
     async def action_list(self) -> None:
@@ -155,13 +155,13 @@ class TVisual(App):
             )
 
     # ########################################################################
-    # ########################################################### TDEBUG #####
+    # ########################################################### TTABLE #####
     @work
     @Anim.toggle_anim
-    async def action_debug(self) -> None:
+    async def action_table(self) -> None:
         if self.tmap and self.map:
             await self.push_screen_wait(
-                TDebug(
+                TTable(
                     self.map.paths,
                     self.map.drones,
                     self.map.table,

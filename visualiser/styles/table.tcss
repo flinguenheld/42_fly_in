@@ -1,8 +1,8 @@
-TDebug {
+TTable {
 	align: center middle;
 }
 
-.tdebug_layout {
+.ttable_layout {
 	color: $warning;
 	border: round $warning;
 	content-align: center middle;
@@ -12,26 +12,26 @@ TDebug {
 	padding: 0 2 2 2;
 }
 
-.ttitle_debug {
+.ttitle_table {
 	color: $warning;
 }
 
 # ###############################################
 # #################################### PATHS ####
 
-.tdebug_layout_paths {
+.ttable_layout_paths {
 	height: 30%;
 	color: $warning;
 	border: round $foreground;
 }
 
-.tdebug_layout_table {
+.ttable_layout_table {
 	height: 60%;
 	color: $warning;
 	border: round $foreground;
 }
 
-.tdebug_field {
+.ttable_field {
 	color: $warning;
 	padding: 1;
 }

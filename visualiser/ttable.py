@@ -3,7 +3,7 @@ from typing import List, Iterator
 from models.hub import Hub
 from models.edge import Edge
 from algo.turn_table import TurnTable
-from visualiser.ttitle import TTitleDebug
+from visualiser.ttitle import TTitleTable
 
 from textual.app import ComposeResult
 from textual.screen import ModalScreen
@@ -11,7 +11,7 @@ from textual.widgets import Label, DataTable
 from textual.containers import VerticalGroup, ScrollableContainer
 
 
-class TDebug(ModalScreen):
+class TTable(ModalScreen):
     BINDINGS = [
         ("escape", "cancel", "Quit"),
         ("enter", "cancel", "Quit"),
@@ -27,11 +27,11 @@ class TDebug(ModalScreen):
         current_turn: int,
     ) -> None:
         super().__init__()
-        self._tpaths_lay = ScrollableContainer(classes="tdebug_layout_paths")
-        self._tpaths = Label("paths", classes="tdebug_field", markup=False)
+        self._tpaths_lay = ScrollableContainer(classes="ttable_layout_paths")
+        self._tpaths = Label("paths", classes="ttable_field", markup=False)
 
-        self._ttable_lay = ScrollableContainer(classes="tdebug_layout_table")
-        self._ttable: DataTable[str] = DataTable(classes="tdebug_field")
+        self._ttable_lay = ScrollableContainer(classes="ttable_layout_table")
+        self._ttable: DataTable[str] = DataTable(classes="ttable_field")
 
         self._fill_paths(paths)
         self._fill_table(drones, table)
@@ -96,8 +96,8 @@ class TDebug(ModalScreen):
     # ########################################################################
     # ########################################################### COMPOSE ####
     def compose(self) -> ComposeResult:
-        with VerticalGroup(classes="tdebug_layout"):
-            yield TTitleDebug()
+        with VerticalGroup(classes="ttable_layout"):
+            yield TTitleTable()
             with self._tpaths_lay:
                 yield self._tpaths
             with self._ttable_lay:
