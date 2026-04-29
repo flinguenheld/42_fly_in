@@ -16,7 +16,7 @@ Constraints:
 - Restricted nodes (2 turns to go on and can't stay on the middle way)
 - Priority nodes (favourite choice when equal way)
 
-<video controls align="center" src="">
+<video controls align="center" src="https://github.com/user-attachments/assets/e2fecdf8-f99d-4f34-b5a9-912863b29022">
 </video>
 
 ### Instructions
