@@ -1,0 +1,6 @@
+# nb_drones: 5
+
+hub: roof1 34 3 [zone=restricted color=red]
+hub: roof2 3 5 [zone=restricted color=red]
+
+connection: roof1-roof2 [max_link_capacity=-1]
