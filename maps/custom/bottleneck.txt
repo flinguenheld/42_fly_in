@@ -1,0 +1,55 @@
+nb_drones: 20
+
+# #############################################################################
+# #############################################################################
+
+start_hub: Start           0  3  [zone=normal     color=green    max_drones=99]
+
+hub:       Dead1           0  1  [zone=priority   color=black    max_drones=4 ]
+hub:       Dead2           1  0  [zone=priority   color=black    max_drones=4 ]
+
+hub:       Top1            1  1  [zone=priority   color=blue     max_drones=4 ]
+hub:       Top2            3  0  [zone=priority   color=blue     max_drones=4 ]
+hub:       Dead3           4  0  [zone=priority   color=black    max_drones=4 ]
+
+hub:       Direct          2  2  [zone=normal     color=blue     max_drones=4 ]
+
+hub:       Forbidden       2  3  [zone=blocked    color=black    max_drones=4 ]
+
+hub:       Restricted      2  4  [zone=restricted color=red      max_drones=4 ]
+
+hub:       Bottom1         1  5  [zone=normal     color=yellow   max_drones=4 ]
+hub:       Bottom2         2  5  [zone=normal     color=yellow   max_drones=4 ]
+hub:       Bottom3         3  5  [zone=normal     color=yellow   max_drones=4 ]
+
+hub:       Bottleneck      4  2  [zone=normal     color=yellow   max_drones=4 ]
+
+end_hub:   Goal            5  2  [zone=normal     color=green    max_drones=99]
+
+# #############################################################################
+# #############################################################################
+
+connection:              Start-Top1                  [max_link_capacity=1]
+connection:              Top1-Top2                   [max_link_capacity=1]
+connection:              Top2-Direct                 [max_link_capacity=1]
+connection:              Top2-Dead3                  [max_link_capacity=1]
+connection:              Top2-Bottleneck             [max_link_capacity=1]
+
+connection:              Start-Dead1                 [max_link_capacity=2]
+connection:              Dead1-Dead2                 [max_link_capacity=2]
+
+connection:              Start-Direct                [max_link_capacity=2]
+connection:              Direct-Bottleneck           [max_link_capacity=2]
+
+connection:              Start-Forbidden             [max_link_capacity=2]
+connection:              Forbidden-Bottleneck        [max_link_capacity=2]
+
+connection:              Start-Restricted            [max_link_capacity=2]
+connection:              Restricted-Bottleneck       [max_link_capacity=2]
+
+connection:              Start-Bottom1               [max_link_capacity=1]
+connection:              Bottom1-Bottom2             [max_link_capacity=1]
+connection:              Bottom2-Bottom3             [max_link_capacity=1]
+connection:              Bottom3-Goal                [max_link_capacity=1]
+
+connection:              Bottleneck-Goal             [max_link_capacity=3]

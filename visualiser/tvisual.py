@@ -91,13 +91,11 @@ class TVisual(App):
 
             except ErrorFlyIn as ef:
                 self.file_path = None
-                await self.push_screen_wait(
-                    TMessageError(ef.str_with_context())
-                )
+                self.push_screen_error(ef.str_with_context())
 
             except Exception as e:
                 self.file_path = None
-                await self.push_screen_wait(TMessageError(str(e)))
+                self.push_screen_error(str(e))
 
     # #####################################################
     # ###################################### INIT MAP #####
@@ -112,6 +110,12 @@ class TVisual(App):
             self._layout_map.mount(self.tmap)
 
             await self.tmap.initialise_map()
+
+    # ########################################################################
+    # ################################################ PUSH SCREEN ERROR #####
+    @work
+    async def push_screen_error(self, to_print: str):
+        await self.push_screen_wait(TMessageError(to_print))
 
     # ########################################################################
     # ###################################################### SELECT FILE #####
