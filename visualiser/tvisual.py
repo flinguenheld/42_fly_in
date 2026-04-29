@@ -1,3 +1,4 @@
+from visualiser.tlist import TList
 import asyncio
 
 from textual import work
@@ -28,6 +29,7 @@ class TVisual(App):
         "styles/main.tcss",
         "styles/map.tcss",
         "styles/file.tcss",
+        "styles/list.tcss",
         "styles/debug.tcss",
         "styles/message.tcss",
         "styles/actions.tcss",
@@ -38,6 +40,7 @@ class TVisual(App):
         ("n", "next_turn", "Next turn"),
         ("f", "file_selection", "File selection"),
         ("r", "restart", "restart map"),
+        ("l", "list", "List"),
         ("d", "debug", "Debug"),
         ("t", "next_theme", "Next theme"),
         ("q", "quit", "Quit"),
@@ -114,7 +117,7 @@ class TVisual(App):
     # ########################################################################
     # ################################################ PUSH SCREEN ERROR #####
     @work
-    async def push_screen_error(self, to_print: str):
+    async def push_screen_error(self, to_print: str) -> None:
         await self.push_screen_wait(TMessageError(to_print))
 
     # ########################################################################
@@ -135,6 +138,21 @@ class TVisual(App):
         self.ftheme.next()
         if self.tmap:
             self.tmap.up_colours()
+
+    # ########################################################################
+    # ########################################################### TDEBUG #####
+    @work
+    @Anim.toggle_anim
+    async def action_list(self) -> None:
+        if self.file_path and self.tmap and self.map:
+            await self.push_screen_wait(
+                TList(
+                    self.file_path,
+                    self.map.drones,
+                    self.map.table,
+                    self.tmap.current_turn,
+                )
+            )
 
     # ########################################################################
     # ########################################################### TDEBUG #####

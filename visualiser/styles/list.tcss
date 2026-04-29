@@ -1,0 +1,43 @@
+TList {
+	align: center middle;
+}
+
+.tlist_layout {
+	color: $accent;
+	border: round $accent;
+	content-align: center middle;
+
+	width: 80%;
+	height: 80%;
+	padding: 0 2 2 2;
+}
+
+.ttitle_list {
+	color: $accent;
+}
+
+.tdebug_layout_paths {
+	height: 30%;
+	color: $accent;
+	border: round $accent;
+}
+
+.tlist_info {
+	height: auto;
+	width: 100%;
+	color: $accent;
+	border: round $accent;
+
+	text-align: center;
+	margin: 0 1;
+}
+
+.tlist_turns {
+	height: auto;
+	width: 100%;
+	color: $foreground;
+	border: round $accent;
+
+	text-align: center;
+	margin: 1;
+}

@@ -46,6 +46,12 @@ class TActions(Static):
             classes="bt_actions",
         )
 
+        self._list = Button(
+            "(L)ist",
+            flat=True,
+            variant="default",
+            classes="bt_actions",
+        )
         self._debug = Button(
             "(D)ebug",
             flat=True,
@@ -78,6 +84,7 @@ class TActions(Static):
                 yield self._file_selection
                 yield self._restart
             with HorizontalGroup(classes="alayout_group alayout_warning"):
+                yield self._list
                 yield self._debug
             with HorizontalGroup(classes="alayout_group alayout_primary"):
                 yield self._theme
@@ -102,6 +109,9 @@ class TActions(Static):
 
         if event.button == self._restart:
             await self.app.run_action("restart")
+
+        if event.button == self._list:
+            await self.app.run_action("list")
 
         if event.button == self._debug:
             await self.app.run_action("debug")

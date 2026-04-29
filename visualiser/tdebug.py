@@ -52,7 +52,10 @@ class TDebug(ModalScreen):
 
             for where in table.drone_iterator(drone):
                 if where:
-                    yield where.hub_to.name
+                    if where.first_on_restricted_zone:
+                        yield f"{where.hub_to.name} (on edge)"
+                    else:
+                        yield where.hub_to.name
                 else:
                     yield " "
 

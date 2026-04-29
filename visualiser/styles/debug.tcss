@@ -3,8 +3,8 @@ TDebug {
 }
 
 .tdebug_layout {
-	color: $accent;
-	border: round $accent;
+	color: $warning;
+	border: round $warning;
 	content-align: center middle;
 
 	width: 90%;
@@ -13,7 +13,7 @@ TDebug {
 }
 
 .ttitle_debug {
-	color: $accent;
+	color: $warning;
 }
 
 # ###############################################
@@ -21,17 +21,17 @@ TDebug {
 
 .tdebug_layout_paths {
 	height: 30%;
-	color: $accent;
+	color: $warning;
 	border: round $foreground;
 }
 
 .tdebug_layout_table {
 	height: 60%;
-	color: $accent;
+	color: $warning;
 	border: round $foreground;
 }
 
 .tdebug_field {
-	color: $accent;
+	color: $warning;
 	padding: 1;
 }
