@@ -1,4 +1,3 @@
-from visualiser.tlist import TList
 import asyncio
 
 from textual import work
@@ -11,6 +10,7 @@ from error import ErrorFlyIn
 from parser.file_parser import FileParser
 
 from visualiser.tfile import TFile
+from visualiser.tlist import TList
 from visualiser.ftheme import FTheme
 from visualiser.map.tmap import TMap
 from visualiser.ttable import TTable
@@ -60,14 +60,16 @@ class TVisual(App):
         self._tactions = TActions()
         self._layout_map = ScrollableContainer(classes="tmap_layout")
 
+        self._init_done = False
+
     # ########################################################################
     # ################################################### TURN MANAGEMENT ####
     def action_next_turn(self) -> None:
-        if self.tmap and not self.tmap.is_flying:
+        if self.tmap and not self.tmap.is_flying and self._init_done:
             self.tmap.next_turn()
 
     async def action_run(self) -> None:
-        if self.tmap:
+        if self.tmap and self._init_done:
             if self.tmap.is_running_all_steps:
                 self.tmap.stop_running()
 
@@ -75,7 +77,7 @@ class TVisual(App):
                 asyncio.create_task(self.tmap.run_all_steps())
 
     def action_previous_turn(self) -> None:
-        if self.tmap and not self.tmap.is_flying:
+        if self.tmap and not self.tmap.is_flying and self._init_done:
             self.tmap.previous_turn()
 
     # ########################################################################
@@ -85,6 +87,7 @@ class TVisual(App):
             self.tmap is None or not self.tmap.is_running_all_steps
         ):
             try:
+                self._init_done = False
                 parser = FileParser(self.file_path)
                 parser.parse_file()
 
@@ -113,6 +116,7 @@ class TVisual(App):
             self._layout_map.mount(self.tmap)
 
             await self.tmap.initialise_map()
+            self._init_done = True
 
     # ########################################################################
     # ################################################ PUSH SCREEN ERROR #####
@@ -126,7 +130,6 @@ class TVisual(App):
     @Anim.toggle_anim
     async def action_file_selection(self) -> None:
         new_path = await self.push_screen_wait(TFile())
-        # self._file_path = "./maps/hello.txt"
 
         if new_path:
             self.file_path = new_path
