@@ -23,16 +23,16 @@ Constraints:
 
 This project uses [UV](https://docs.astral.sh/uv/) for automatic virtual environment management.  
 You can use it with the Makefile with these commands:
-```Bash
+``` Bash
     make install
 ```
-```Bash
+``` Bash
     make run
 ```
-```Bash
+``` Bash
     make clean
 ```
-```Bash
+``` Bash
     make lint
 ```
 

@@ -130,8 +130,6 @@ class MapCreator:
         hub_from = self._get_hub(lambda h: h.name, from_name)
         hub_to = self._get_hub(lambda h: h.name, to_name)
 
-        # raise ErrorFlyIn(f"{from_name}->{self.graph}")
-
         if hub_from is None:
             raise ErrorFlyIn(f"Hub '{from_name}' doesn't exist in the map.")
 

@@ -107,6 +107,8 @@ class Hub:
             max = int(max_drones)
         except ValueError:
             raise ErrorFlyIn("Invalid 'max_drones' option.")
+        if max <= 0:
+            raise ErrorFlyIn("Option 'max_drones' has to be at least 1.")
 
         return Hub(name, point, max, color, Hub.Zone.from_txt(zone), type)
 
