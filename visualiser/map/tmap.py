@@ -58,11 +58,13 @@ class TMap(Widget, Anim):
 
     # ########################################################################
     # ################################################# RUNNING ALL STEPS ####
-    def stop_running(self) -> None:
+    def stop_running(self, call_after: Callable[[bool], None]) -> None:
         self.is_running_all_steps = False
+        call_after(self.is_running_all_steps)
 
-    async def run_all_steps(self) -> None:
+    async def run_all_steps(self, call_after: Callable[[bool], None]) -> None:
         self.is_running_all_steps = True
+        call_after(self.is_running_all_steps)
 
         while self.current_turn < self.map.table.nb_turns:
             if not self.is_running_all_steps:
@@ -80,7 +82,7 @@ class TMap(Widget, Anim):
 
             await asyncio.sleep(0.8)
 
-        self.stop_running()
+        self.stop_running(call_after)
 
     # ########################################################################
     # ################################################### NEXT / PREVIOUS ####

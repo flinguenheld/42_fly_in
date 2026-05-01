@@ -8,13 +8,13 @@ graph and some drones.
 This graph represents a map with a start and an end.  
 Then we have to find the minimum turns needed to move all drones to the end.
 
-Each turn allows you one move for each drones.
+Each turn allows you to do one move for each drones.
 
 Constraints:
 - Max drones per edge
-- Max drones pe node
+- Max drones per node
 - Restricted nodes (2 turns to go on and can't stay on the middle way)
-- Priority nodes (favourite choice when equal way)
+- Priority nodes (favourite choice when two ways end in the same turn)
 
 <video controls align="center" src="https://github.com/user-attachments/assets/55b090cc-3873-4f82-b554-cf7c5453e912">
 </video>
@@ -22,7 +22,8 @@ Constraints:
 ### Instructions
 
 This project uses [UV](https://docs.astral.sh/uv/) for automatic virtual environment management.  
-You can use it with the Makefile with these commands:
+Once installed, you can use it with the Makefile with these commands:
+
 ```Bash
     make install
 ```

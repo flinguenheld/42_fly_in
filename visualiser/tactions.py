@@ -73,6 +73,16 @@ class TActions(Static):
         )
 
     # ########################################################################
+    # ############################################## UP RUN BUTTON LABEL #####
+    def up_run_button(self, is_running_all: bool) -> None:
+        if is_running_all:
+            self._run.variant = "error"
+            self._run.label = "Stop r(u)nning"
+        else:
+            self._run.variant = "primary"
+            self._run.label = "R(u)n"
+
+    # ########################################################################
     # ########################################################## COMPOSE #####
     def compose(self) -> ComposeResult:
         with HorizontalScroll(id="amain_layout"):

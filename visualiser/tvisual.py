@@ -61,6 +61,7 @@ class TVisual(App):
         self._layout_map = ScrollableContainer(classes="tmap_layout")
 
         self._init_done = False
+        self._running_all_task: asyncio.Task | None = None
 
     # ########################################################################
     # ################################################### TURN MANAGEMENT ####
@@ -72,10 +73,14 @@ class TVisual(App):
     async def action_run(self) -> None:
         if self.tmap and self._init_done:
             if self.tmap.is_running_all_steps:
-                self.tmap.stop_running()
+                self.tmap.stop_running(self._tactions.up_run_button)
 
-            elif not self.tmap.is_flying:
-                asyncio.create_task(self.tmap.run_all_steps())
+            elif not self.tmap.is_flying and (
+                self._running_all_task is None or self._running_all_task.done()
+            ):
+                self._running_all_task = asyncio.create_task(
+                    self.tmap.run_all_steps(self._tactions.up_run_button)
+                )
 
     def action_previous_turn(self) -> None:
         if self.tmap and not self.tmap.is_flying and self._init_done:
