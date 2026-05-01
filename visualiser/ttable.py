@@ -50,12 +50,14 @@ class TTable(ModalScreen):
             yield drone
             yield table.paths[0][0].hub_from.name
 
-            for where in table.drone_iterator(drone):
-                if where:
-                    if where.first_on_restricted_zone:
-                        yield f"{where.hub_to.name} (on edge)"
+            for turn in range(1, table.nb_turns + 1):
+                drones_on_turn = table.get_turn(turn)
+
+                if drone in drones_on_turn:
+                    if drones_on_turn[drone].first_on_restricted_zone:
+                        yield f"{drones_on_turn[drone].hub_to.name} (on edge)"
                     else:
-                        yield where.hub_to.name
+                        yield drones_on_turn[drone].hub_to.name
                 else:
                     yield " "
 

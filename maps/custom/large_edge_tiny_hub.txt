@@ -1,0 +1,25 @@
+nb_drones: 20
+
+# #############################################################################
+# #############################################################################
+
+start_hub: Start           0  0  [zone=normal     color=green    max_drones=99]
+
+hub:       A               1  0  [zone=priority   color=black    max_drones=4 ]
+hub:       B               2  0  [zone=priority   color=black    max_drones=4 ]
+
+hub:       C               3  0  [zone=priority   color=blue     max_drones=4 ]
+hub:       D               4  0  [zone=priority   color=blue     max_drones=4 ]
+
+end_hub:   Goal            5  0  [zone=normal     color=green    max_drones=99]
+
+# #############################################################################
+# #############################################################################
+
+connection:              Start-A                 [max_link_capacity=5]
+
+connection:              A-B                     [max_link_capacity=2]
+connection:              B-C                     [max_link_capacity=1]
+connection:              C-D                     [max_link_capacity=1]
+
+connection:              D-Goal                  [max_link_capacity=1]

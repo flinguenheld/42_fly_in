@@ -93,12 +93,33 @@ class TMap(Widget, Anim):
             self._update_drones(new_positions)
 
     def previous_turn(self) -> None:
+        """
+        The previous is tricky since get_turn() only returns edges and
+        nothing if the before the first move.
+        So compare the current and the previous to create a new dict which
+        can contain Edge and Hub.
+        """
+
         if self.current_turn > 0:
+            current_positions = self.map.table.get_turn(
+                self.current_turn, with_duplicates=True
+            )
+
             self.current_turn -= 1
             self.info()
 
-            new_pos = self.map.table.get_turn(self.current_turn, all=True)
-            self._update_drones(new_pos)
+            previous_positions = self.map.table.get_turn(
+                self.current_turn, with_duplicates=True
+            )
+
+            manage_start: Dict[str, Hub | Edge] = {}
+            for drone, where in current_positions.items():
+                if drone not in previous_positions:
+                    manage_start[drone] = self.map.start
+                else:
+                    manage_start[drone] = previous_positions[drone]
+
+            self._update_drones(manage_start)
 
     # ########################################################################
     # ######################################################### IS FLYING ####
@@ -109,13 +130,14 @@ class TMap(Widget, Anim):
     # ########################################################################
     # ######################################################### UP DRONES ####
     def _update_drones(
-        self, new_positions: Dict[str, Hub | Edge | None]
+        self, new_positions: Dict[str, Edge] | Dict[str, Edge | Hub]
     ) -> None:
-
         for drone, position in new_positions.items():
-            if not position:
-                position = self.map.start
-            self._tdrones[drone].where = position
+            if isinstance(position, Hub) or position.first_on_restricted_zone:
+                self._tdrones[drone].where = position
+
+            else:
+                self._tdrones[drone].where = position.hub_to
 
         self._up_hub_counters()
 

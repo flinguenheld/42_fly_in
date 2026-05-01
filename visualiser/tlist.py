@@ -1,5 +1,3 @@
-from models.hub import Hub
-from models.edge import Edge
 from typing import List
 
 from algo.turn_table import TurnTable
@@ -57,20 +55,20 @@ class TList(ModalScreen):
         text = ""
 
         for turn in range(1, current_turn + 1):
-            turn_moves = table.get_turn(turn)
+            turn_moves = table.get_turn(turn, with_duplicates=False)
             line = ""
             for drone in drones:
                 if drone in turn_moves:
                     to = turn_moves[drone]
 
                     if to:
-                        if isinstance(to, Edge):
+                        if to.first_on_restricted_zone:
                             line += (
                                 f"{drone}-{to.hub_from.name}/{to.hub_to.name} "
                             )
 
-                        elif isinstance(to, Hub):
-                            line += f"{drone}-{to.name} "
+                        else:
+                            line += f"{drone}-{to.hub_to.name} "
 
             if line:
                 text += f"{line}\n"

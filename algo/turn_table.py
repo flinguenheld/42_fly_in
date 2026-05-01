@@ -37,35 +37,41 @@ class TurnTable:
     def get_turn(
         self,
         turn: int,
-        all: bool = False,
-    ) -> Dict[str, Hub | Edge | None]:
+        with_duplicates: bool = True,
+    ) -> Dict[str, Edge]:
         """
         Get drones and their position at the given turn
-        By default, it only return those which are active on the turn.
-        Use all = True to get all of them
+
+           |  1  |  2  |  3  |  4  |  5  |
+        ---|-----|-----|-----|-----|-----|
+        D1 | A/B |     | B/C |     |     |
+        D2 |     | A/B |     | B/C |     |
+        D3 |     |     | A/B |     | B/C |
+        D4 |     |     |     | A/B |     |
+
+        If with duplicates is True:
+
+           |  1  |  2  |  3  |  4  |  5  |
+        ---|-----|-----|-----|-----|-----|
+        D1 | A/B | A/B | B/C |     |     |
+        D2 |     | A/B | A/B | B/C |     |
+        D3 |     |     | A/B | A/B | B/C |
+        D4 |     |     |     | A/B | A/B |
+
         """
 
-        positions: Dict[str, Hub | Edge | None] = dict()
+        positions: Dict[str, Edge] = dict()
+
+        if turn <= 0:
+            return {}
 
         for drone, edges in self.table.items():
             if turn in edges:
-                # Is in the middle of a restricted area ?
-                if edges[turn].first_on_restricted_zone:
+                if with_duplicates or not (
+                    turn - 1 in self.table[drone]
+                    and self.table[drone][turn - 1] == edges[turn]
+                ):
                     positions[drone] = edges[turn]
-                else:
-                    positions[drone] = edges[turn].hub_to
-
-            elif all:
-                # Get the previous turn which is not None
-                # None will be managed as start by TDrone
-                prev = turn - 1
-                while prev > 0 and prev not in edges:
-                    prev -= 1
-
-                if prev <= 0:
-                    positions[drone] = None
-                else:
-                    positions[drone] = edges[prev].hub_to
 
         return positions
 
@@ -81,22 +87,23 @@ class TurnTable:
     # ############################################################## ALGO ####
 
     # ########################################################################
-    # ########################################################## EDGES ON ####
-    def _edges_on(self, turn: int) -> Iterator[Edge]:
-        for drone, edges in self.table.items():
-            if turn in edges:
-                yield edges[turn]
-
-    # ########################################################################
     # ################################################# GET SHORTEST PATH ####
     def _get_shortest_path(self) -> Dict[int, Edge]:
 
         # #######################################################
+        # #################################### EDGES ON TURN ####
+        def edges_on_turn(turn: int) -> Iterator[Edge]:
+
+            for drone, edges in self.table.items():
+                if turn in edges:
+                    yield edges[turn]
+
+        # #######################################################
         # ################################ IS EDGE AVAILABLE ####
         def is_edge_available(edge: Edge, turn: int) -> bool:
-            amount_on_edge = sum(1 for e in self._edges_on(turn) if e == edge)
+            amount_on_edge = sum(1 for e in edges_on_turn(turn) if e == edge)
             amount_on_hub = sum(
-                1 for e in self._edges_on(turn) if e.hub_to == edge.hub_to
+                1 for e in edges_on_turn(turn) if e.hub_to == edge.hub_to
             )
 
             return amount_on_edge < edge.restriction and (
@@ -108,7 +115,7 @@ class TurnTable:
         # ############################## ARE EDGES AVAILABLE ####
         def are_edges_available(edge: Edge, turn: int) -> bool:
 
-            amount_on_edge = sum(1 for e in self._edges_on(turn) if e == edge)
+            amount_on_edge = sum(1 for e in edges_on_turn(turn) if e == edge)
 
             return amount_on_edge < edge.restriction and is_edge_available(
                 edge, turn + 1
@@ -156,6 +163,8 @@ class TurnTable:
             turn: int = 0
             current_line: Dict[int, Edge] = dict()
 
+            keep_last_edge: Edge | None = None
+
             for edge in path:
                 while True:
                     turn += 1
@@ -164,13 +173,18 @@ class TurnTable:
                         if are_edges_available(edge, turn):
                             current_line[turn] = edge.copy_first_true()
                             current_line[turn + 1] = edge
+                            keep_last_edge = edge
                             turn += 1
                             break
 
                     else:
                         if is_edge_available(edge, turn):
                             current_line[turn] = edge
+                            keep_last_edge = edge
                             break
+
+                    if keep_last_edge:
+                        current_line[turn] = keep_last_edge
 
             temp = choose_earliest(current_line, temp)
 

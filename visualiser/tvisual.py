@@ -66,7 +66,8 @@ class TVisual(App):
     # ################################################### TURN MANAGEMENT ####
     def action_next_turn(self) -> None:
         if self.tmap and not self.tmap.is_flying and self._init_done:
-            self.tmap.next_turn()
+            if not self.tmap.is_running_all_steps:
+                self.tmap.next_turn()
 
     async def action_run(self) -> None:
         if self.tmap and self._init_done:
@@ -78,7 +79,8 @@ class TVisual(App):
 
     def action_previous_turn(self) -> None:
         if self.tmap and not self.tmap.is_flying and self._init_done:
-            self.tmap.previous_turn()
+            if not self.tmap.is_running_all_steps:
+                self.tmap.previous_turn()
 
     # ########################################################################
     # ########################################################## RESTART #####
